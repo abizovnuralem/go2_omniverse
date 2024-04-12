@@ -1,6 +1,8 @@
 # Welcome to the Unitree Go2 Omniverse Project!
 
-I am happy to show you the first Unitree Go2 integration for Nvidia Isaac Sim (Orbit)! This project will help researchers to develop their algorithms in different simulation environments.
+I am thrilled to announce that the Unitree Go2 robot has now been integrated with the Nvidia Isaac Sim (Orbit), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
+
+Get ready to take your research to the next level with this powerful new resource at your fingertips!
 
 
 Real time Go2 Balancing:
