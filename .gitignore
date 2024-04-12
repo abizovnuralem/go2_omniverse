@@ -1,0 +1,6 @@
+build
+log
+install
+.vscode
+__pycache__
+.env

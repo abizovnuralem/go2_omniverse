@@ -84,6 +84,8 @@ import omni.appwindow  # Contains handle to keyboard
 import omni.isaac.orbit.terrains as terrain_gen
 from terrain_generator_cfg import TerrainGeneratorCfg
 
+from typing import Literal
+
 
 base_command = [0, 0, 0]
 
@@ -301,6 +303,49 @@ class CurriculumCfg:
 
 
 
+@configclass
+class ViewerCfg:
+    """Configuration of the scene viewport camera."""
+
+    eye: tuple[float, float, float] = (7.5, 7.5, 7.5)
+    """Initial camera position (in m). Default is (7.5, 7.5, 7.5)."""
+
+    lookat: tuple[float, float, float] = (0.0, 0.0, 0.0)
+    """Initial camera target position (in m). Default is (0.0, 0.0, 0.0)."""
+
+    cam_prim_path: str = "/OmniverseKit_Persp"
+    """The camera prim path to record images from. Default is "/OmniverseKit_Persp",
+    which is the default camera in the viewport.
+    """
+
+    resolution: tuple[int, int] = (1920, 1080)
+    """The resolution (width, height) of the camera specified using :attr:`cam_prim_path`.
+    Default is (1280, 720).
+    """
+
+    origin_type: Literal["world", "env", "asset_root"] = "world"
+    """The frame in which the camera position (eye) and target (lookat) are defined in. Default is "world".
+
+    Available options are:
+
+    * ``"world"``: The origin of the world.
+    * ``"env"``: The origin of the environment defined by :attr:`env_index`.
+    * ``"asset_root"``: The center of the asset defined by :attr:`asset_name` in environment :attr:`env_index`.
+    """
+
+    env_index: int = 0
+    """The environment index for frame origin. Default is 0.
+
+    This quantity is only effective if :attr:`origin` is set to "env" or "asset_root".
+    """
+
+    asset_name: str | None = None
+    """The asset name in the interactive scene for the frame origin. Default is None.
+
+    This quantity is only effective if :attr:`origin` is set to "asset_root".
+    """
+
+
 
 @configclass
 class LocomotionVelocityRoughEnvCfg(RLTaskEnvCfg):
@@ -308,6 +353,8 @@ class LocomotionVelocityRoughEnvCfg(RLTaskEnvCfg):
 
     # Scene settings
     scene: MySceneCfg = MySceneCfg(num_envs=4096, env_spacing=2.5)
+
+    viewer: ViewerCfg = ViewerCfg()
     # Basic settings
     observations: ObservationsCfg = ObservationsCfg()
     actions: ActionsCfg = ActionsCfg()
@@ -384,6 +431,10 @@ def _sub_keyboard_event(event, *args, **kwargs) -> bool:
             base_command = [0, 1, 0]
         if event.input.name == 'D':
             base_command = [0, -1, 0]
+        if event.input.name == 'Q':
+            base_command = [0, 0, 1]
+        if event.input.name == 'E':
+            base_command = [0, 0, -1]
         
     elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
         base_command = [0, 0, 0]
