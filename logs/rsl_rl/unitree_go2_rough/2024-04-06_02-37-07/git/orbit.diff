@@ -1,0 +1,39 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   source/extensions/omni.isaac.orbit_tasks/omni/isaac/orbit_tasks/locomotion/velocity/config/unitree_go2/agents/rsl_rl_cfg.py
+	modified:   source/standalone/workflows/rsl_rl/play.py
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/source/extensions/omni.isaac.orbit_tasks/omni/isaac/orbit_tasks/locomotion/velocity/config/unitree_go2/agents/rsl_rl_cfg.py b/source/extensions/omni.isaac.orbit_tasks/omni/isaac/orbit_tasks/locomotion/velocity/config/unitree_go2/agents/rsl_rl_cfg.py
+index 7de557b..f027b3d 100644
+--- a/source/extensions/omni.isaac.orbit_tasks/omni/isaac/orbit_tasks/locomotion/velocity/config/unitree_go2/agents/rsl_rl_cfg.py
++++ b/source/extensions/omni.isaac.orbit_tasks/omni/isaac/orbit_tasks/locomotion/velocity/config/unitree_go2/agents/rsl_rl_cfg.py
+@@ -15,7 +15,7 @@ from omni.isaac.orbit_tasks.utils.wrappers.rsl_rl import (
+ @configclass
+ class UnitreeGo2RoughPPORunnerCfg(RslRlOnPolicyRunnerCfg):
+     num_steps_per_env = 24
+-    max_iterations = 1500
++    max_iterations = 15000
+     save_interval = 50
+     experiment_name = "unitree_go2_rough"
+     empirical_normalization = False
+diff --git a/source/standalone/workflows/rsl_rl/play.py b/source/standalone/workflows/rsl_rl/play.py
+index e73a071..f778e8c 100644
+--- a/source/standalone/workflows/rsl_rl/play.py
++++ b/source/standalone/workflows/rsl_rl/play.py
+@@ -94,6 +94,7 @@ def main():
+         with torch.inference_mode():
+             # agent stepping
+             actions = policy(obs)
++            print(actions)
+             # env stepping
+             obs, _, _, _ = env.step(actions)
+ 

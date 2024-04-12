@@ -1,0 +1,38 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   source/standalone/tutorials/03_envs/create_quadruped_base_env.py
+	modified:   source/standalone/workflows/rsl_rl/play.py
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/source/standalone/tutorials/03_envs/create_quadruped_base_env.py b/source/standalone/tutorials/03_envs/create_quadruped_base_env.py
+index cb06475..11ff1c3 100644
+--- a/source/standalone/tutorials/03_envs/create_quadruped_base_env.py
++++ b/source/standalone/tutorials/03_envs/create_quadruped_base_env.py
+@@ -211,6 +211,7 @@ def main():
+ 
+     # load level policy
+     policy_path = os.path.join(ISAAC_ORBIT_NUCLEUS_DIR, "Policies", "ANYmal-C", "policy.pt")
++    print(policy_path)
+     # check if policy file exists
+     if not check_file_path(policy_path):
+         raise FileNotFoundError(f"Policy file '{policy_path}' does not exist.")
+diff --git a/source/standalone/workflows/rsl_rl/play.py b/source/standalone/workflows/rsl_rl/play.py
+index e73a071..f778e8c 100644
+--- a/source/standalone/workflows/rsl_rl/play.py
++++ b/source/standalone/workflows/rsl_rl/play.py
+@@ -94,6 +94,7 @@ def main():
+         with torch.inference_mode():
+             # agent stepping
+             actions = policy(obs)
++            print(actions)
+             # env stepping
+             obs, _, _, _ = env.step(actions)
+ 
