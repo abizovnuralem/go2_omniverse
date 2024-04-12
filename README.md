@@ -1,5 +1,7 @@
 # Welcome to the Unitree Go2 Omniverse Project!
 
+I am happy to show you the first Unitree Go2 integration for Nvidia Isaac Sim (Orbit)! This project will help researchers to develop their algorithms in different simulation environments.
+
 
 Real time Go2 Balancing:
 
