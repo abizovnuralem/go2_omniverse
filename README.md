@@ -1,6 +1,13 @@
 # Welcome to the Unitree Go2 Omniverse Project!
 
 
+Real time Go2 Balancing:
+
+<p align="center">
+<img width="1280" height="640" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/60c2233a-7586-49b6-a134-a7bddc4dd9ae" alt='Go2'>
+</p>
+
+
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
