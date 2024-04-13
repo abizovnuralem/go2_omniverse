@@ -15,7 +15,7 @@ Real time Go2 Balancing:
 Go2 Ros2 Camera stream:
 
 <p align="center">
-<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/60c2233a-7586-49b6-a134-a7bddc4dd9ae" alt='Go2'>
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/c740147b-ce00-4d7c-94de-0140be135e3e" alt='Go2'>
 </p>
 
 
