@@ -43,6 +43,11 @@ The full instruction:
 https://isaac-orbit.github.io/orbit/source/setup/installation.html
 ```
 
+Also, you need to install ROS2 on your system and configure it:
+
+```
+https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#isaac-sim-app-install-ros
+```
 
 ## Usage
 
