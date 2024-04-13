@@ -15,7 +15,10 @@ Real time Go2 Balancing:
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
-3. Ros2 full integration
+3. Camera stream to ROS2 :white_check_mark: 
+4. Lidar stream to ROS2
+5. IMU data stream to ROS2
+6. URDF real-time joints sync
 
 ## Your feedback and support mean the world to us. 
 
