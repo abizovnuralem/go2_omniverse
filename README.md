@@ -12,6 +12,13 @@ Real time Go2 Balancing:
 </p>
 
 
+Go2 Ros2 Camera stream:
+
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/60c2233a-7586-49b6-a134-a7bddc4dd9ae" alt='Go2'>
+</p>
+
+
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
