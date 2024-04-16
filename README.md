@@ -78,6 +78,8 @@ Go inside the repo folder, first, you need to build ros2 env for your Nvidia orb
 7. python main.py
 ```
 
+You can control the dog using "WASD" keyboard commands
+
 ## ROS2 SDK
 
 You can use https://github.com/abizovnuralem/go2_ros2_sdk as a basement for your ROS2 setup.
