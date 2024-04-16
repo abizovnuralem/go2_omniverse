@@ -57,13 +57,14 @@ https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#
 ```
 
 ## Usage
+Go inside the repo folder, first, you need to build ros2 env for your Nvidia orbit:
+
 
 ```
-Go inside the repo folder, first, you need to build ros2 env for your Nvidia orbit:
-1. conda activate orbit
-2. go inside IsaacSim-ros_workspaces folder
-3. execute ./build_foxy.sh or ./build_humble.sh, wait some time then source your ros2 env using source build_ws/foxy/foxy_ws/install/setup.bash or humble version
-4. go back to the root folder
+1. go inside IsaacSim-ros_workspaces folder
+2. execute ./build_foxy.sh or ./build_humble.sh, wait some time then source your ros2 env using source build_ws/foxy/foxy_ws/install/setup.bash or humble version
+3. go back to the root folder
+4. conda activate orbit
 5. python main.py
 ```
 
