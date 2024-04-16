@@ -31,8 +31,10 @@ URDF real-time joints sync:
 2. Keyboard real time control :white_check_mark: 
 3. Camera stream to ROS2 :white_check_mark: 
 4. Lidar stream to ROS2
-5. IMU data stream to ROS2
+5. IMU data stream to ROS2 :white_check_mark: 
 6. URDF real-time joints sync :white_check_mark:
+7. Foot force data stream
+8. Real-time control from ROS2
 
 ## Your feedback and support mean the world to us. 
 

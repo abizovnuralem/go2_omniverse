@@ -27,8 +27,6 @@
 
 from __future__ import annotations
 
-from ros2 import RobotBaseNode
-
 
 """Launch Isaac Sim Simulator first."""
 import argparse
@@ -119,6 +117,7 @@ from terrain_cfg import ROUGH_TERRAINS_CFG
 
 
 import rclpy
+from ros2 import RobotBaseNode
 
 
 base_command = [0, 0, 0]
@@ -489,9 +488,11 @@ def main():
 
             # publish joint states
             base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[0])
+            base_node.publish_odom(env.env.scene["robot"].data.root_state_w[0, :3], env.env.scene["robot"].data.root_state_w[0, 3:7])
 
             print("-------------------------------")
-            print("Received max contact force of: ", env.env.scene["contact_forces"].data.net_forces_w)
+            print("body pos: ", env.env.scene["robot"].data.root_state_w[:, :3])
+            print("body quaternion: ", env.env.scene["robot"].data.root_state_w[:, 3:7])
 
     # close the simulator
     env.close()

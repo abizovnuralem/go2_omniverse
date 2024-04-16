@@ -83,6 +83,10 @@
     uri: https://github.com/ros2-gbp/ament_cmake_ros-release.git
     version: release/foxy/domain_coordinator/0.9.2-1
 - git:
+    local-name: ament_index/ament_index_cpp
+    uri: https://github.com/ros2-gbp/ament_index-release.git
+    version: release/foxy/ament_index_cpp/1.1.0-1
+- git:
     local-name: ament_index/ament_index_python
     uri: https://github.com/ros2-gbp/ament_index-release.git
     version: release/foxy/ament_index_python/1.1.0-1
@@ -167,6 +171,10 @@
     uri: https://github.com/ros2-gbp/ament_package-release.git
     version: release/foxy/ament_package/0.9.5-1
 - git:
+    local-name: class_loader
+    uri: https://github.com/ros2-gbp/class_loader-release.git
+    version: release/foxy/class_loader/2.0.3-1
+- git:
     local-name: common_interfaces/geometry_msgs
     uri: https://github.com/ros2-gbp/common_interfaces-release.git
     version: release/foxy/geometry_msgs/2.0.5-1
@@ -187,6 +195,10 @@
     uri: https://github.com/ros2-gbp/common_interfaces-release.git
     version: release/foxy/std_srvs/2.0.5-1
 - git:
+    local-name: console_bridge_vendor
+    uri: https://github.com/ros2-gbp/console_bridge_vendor-release.git
+    version: release/foxy/console_bridge_vendor/1.2.4-1
+- git:
     local-name: cyclonedds
     uri: https://github.com/ros2-gbp/cyclonedds-release.git
     version: release/foxy/cyclonedds/0.7.0-1
@@ -203,9 +215,21 @@
     uri: https://github.com/ros2-gbp/foonathan_memory_vendor-release.git
     version: release/foxy/foonathan_memory_vendor/1.2.0-1
 - git:
+    local-name: geometry2/tf2
+    uri: https://github.com/ros2-gbp/geometry2-release.git
+    version: release/foxy/tf2/0.13.14-1
+- git:
     local-name: geometry2/tf2_msgs
     uri: https://github.com/ros2-gbp/geometry2-release.git
     version: release/foxy/tf2_msgs/0.13.14-1
+- git:
+    local-name: geometry2/tf2_py
+    uri: https://github.com/ros2-gbp/geometry2-release.git
+    version: release/foxy/tf2_py/0.13.14-1
+- git:
+    local-name: geometry2/tf2_ros
+    uri: https://github.com/ros2-gbp/geometry2-release.git
+    version: release/foxy/tf2_ros/0.13.14-1
 - git:
     local-name: google_benchmark_vendor
     uri: https://github.com/ros2-gbp/google_benchmark_vendor-release.git
@@ -239,9 +263,17 @@
     uri: https://github.com/ros2-gbp/launch_ros-release.git
     version: release/foxy/launch_testing_ros/0.11.7-1
 - git:
+    local-name: libstatistics_collector
+    uri: https://github.com/ros2-gbp/libstatistics_collector-release.git
+    version: release/foxy/libstatistics_collector/1.0.2-1
+- git:
     local-name: libyaml_vendor
     uri: https://github.com/ros2-gbp/libyaml_vendor-release.git
     version: release/foxy/libyaml_vendor/1.0.4-1
+- git:
+    local-name: message_filters
+    uri: https://github.com/ros2-gbp/ros2_message_filters-release.git
+    version: release/foxy/message_filters/3.2.7-1
 - git:
     local-name: mimick_vendor
     uri: https://github.com/ros2-gbp/mimick_vendor-release.git
@@ -299,6 +331,10 @@
     uri: https://github.com/ros2-gbp/rcl_interfaces-release.git
     version: release/foxy/rosgraph_msgs/1.0.0-1
 - git:
+    local-name: rcl_interfaces/statistics_msgs
+    uri: https://github.com/ros2-gbp/rcl_interfaces-release.git
+    version: release/foxy/statistics_msgs/1.0.0-1
+- git:
     local-name: rcl_interfaces/test_msgs
     uri: https://github.com/ros2-gbp/rcl_interfaces-release.git
     version: release/foxy/test_msgs/1.0.0-1
@@ -306,6 +342,18 @@
     local-name: rcl_logging/rcl_logging_spdlog
     uri: https://github.com/ros2-gbp/rcl_logging-release.git
     version: release/foxy/rcl_logging_spdlog/1.1.0-1
+- git:
+    local-name: rclcpp/rclcpp
+    uri: https://github.com/ros2-gbp/rclcpp-release.git
+    version: release/foxy/rclcpp/2.4.3-1
+- git:
+    local-name: rclcpp/rclcpp_action
+    uri: https://github.com/ros2-gbp/rclcpp-release.git
+    version: release/foxy/rclcpp_action/2.4.3-1
+- git:
+    local-name: rclcpp/rclcpp_components
+    uri: https://github.com/ros2-gbp/rclcpp-release.git
+    version: release/foxy/rclcpp_components/2.4.3-1
 - git:
     local-name: rclpy
     uri: https://github.com/ros2-gbp/rclpy-release.git

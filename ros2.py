@@ -27,6 +27,8 @@ import asyncio
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
 from sensor_msgs.msg import JointState
+from geometry_msgs.msg import TransformStamped
+from tf2_ros import TransformBroadcaster
 
 
 class RobotBaseNode(Node):
@@ -34,6 +36,7 @@ class RobotBaseNode(Node):
         super().__init__('go2_driver_node')
         qos_profile = QoSProfile(depth=10)
         self.joint_pub = self.create_publisher(JointState, 'joint_states', qos_profile)
+        self.broadcaster = TransformBroadcaster(self, qos=qos_profile)
 
     def publish_joints(self, joint_names_lst, joint_state_lst):
         # Create message
@@ -50,6 +53,21 @@ class RobotBaseNode(Node):
             ]
 
         self.joint_pub.publish(joint_state)
+
+    def publish_odom(self, base_pos, base_rot):
+
+        odom_trans = TransformStamped()
+        odom_trans.header.stamp = self.get_clock().now().to_msg()
+        odom_trans.header.frame_id = 'odom'
+        odom_trans.child_frame_id = 'base_link'
+        odom_trans.transform.translation.x = base_pos[0].item()
+        odom_trans.transform.translation.y = base_pos[1].item()
+        odom_trans.transform.translation.z = base_pos[2].item() + 0.07
+        odom_trans.transform.rotation.x = base_rot[1].item()
+        odom_trans.transform.rotation.y = base_rot[2].item()
+        odom_trans.transform.rotation.z = base_rot[3].item()
+        odom_trans.transform.rotation.w = base_rot[0].item()
+        self.broadcaster.sendTransform(odom_trans)
 
     async def run(self):
         while True:
