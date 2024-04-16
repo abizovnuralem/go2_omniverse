@@ -29,6 +29,7 @@ from rclpy.qos import QoSProfile
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import TransformStamped
 from tf2_ros import TransformBroadcaster
+from go2_interfaces.msg import Go2State
 
 
 class RobotBaseNode(Node):
@@ -36,8 +37,9 @@ class RobotBaseNode(Node):
         super().__init__('go2_driver_node')
         qos_profile = QoSProfile(depth=10)
         self.joint_pub = self.create_publisher(JointState, 'joint_states', qos_profile)
+        self.go2_state_pub = self.create_publisher(Go2State, 'go2_states', qos_profile)
         self.broadcaster = TransformBroadcaster(self, qos=qos_profile)
-
+        
     def publish_joints(self, joint_names_lst, joint_state_lst):
         # Create message
         joint_state = JointState()
@@ -68,6 +70,18 @@ class RobotBaseNode(Node):
         odom_trans.transform.rotation.z = base_rot[3].item()
         odom_trans.transform.rotation.w = base_rot[0].item()
         self.broadcaster.sendTransform(odom_trans)
+
+
+    def publish_robot_state(self, foot_force_lst):
+
+        go2_state = Go2State()
+        go2_state.foot_force = [
+            int(foot_force_lst[0].item()), 
+            int(foot_force_lst[1].item()), 
+            int(foot_force_lst[2].item()), 
+            int(foot_force_lst[3].item())]
+        self.go2_state_pub.publish(go2_state) 
+
 
     async def run(self):
         while True:

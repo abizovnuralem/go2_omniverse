@@ -64,10 +64,12 @@ Go inside the repo folder, first, you need to build ros2 env for your Nvidia orb
 
 ```
 1. go inside IsaacSim-ros_workspaces folder
-2. execute ./build_foxy.sh or ./build_humble.sh, wait some time then source your ros2 env using source build_ws/foxy/foxy_ws/install/setup.bash or humble version
-3. go back to the root folder
-4. conda activate orbit
-5. python main.py
+2. execute ./build_foxy.sh or ./build_humble.sh
+3. source build_ws/foxy/foxy_ws/install/setup.bash or humble 
+4. source build_ws/foxy/isaac_sim_ros_ws/install/local_setup.bash or humble 
+5. go back to the root folder
+6. conda activate orbit
+7. python main.py
 ```
 
 ## Development

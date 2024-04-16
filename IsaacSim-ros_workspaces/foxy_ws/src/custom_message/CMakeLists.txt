@@ -21,8 +21,11 @@ find_package(std_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "msg/SampleMsg.msg"
+  "msg/Go2Cmd.msg"
+  "msg/Go2State.msg"
   "msg/Go2Move.msg"
+  "msg/Go2RpyCmd.msg"
+  "msg/IMU.msg"
   DEPENDENCIES std_msgs
   )
 # uncomment the following section in order to fill in

@@ -485,14 +485,15 @@ def main():
             # env stepping
             obs, _, _, _ = env.step(actions)
 
-
-            # publish joint states
+            # publish ros2 info
             base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[0])
             base_node.publish_odom(env.env.scene["robot"].data.root_state_w[0, :3], env.env.scene["robot"].data.root_state_w[0, 3:7])
-
-            print("-------------------------------")
-            print("body pos: ", env.env.scene["robot"].data.root_state_w[:, :3])
-            print("body quaternion: ", env.env.scene["robot"].data.root_state_w[:, 3:7])
+            base_node.publish_robot_state([
+                env.env.scene["contact_forces"].data.net_forces_w[0][4][2], 
+                env.env.scene["contact_forces"].data.net_forces_w[0][8][2], 
+                env.env.scene["contact_forces"].data.net_forces_w[0][14][2], 
+                env.env.scene["contact_forces"].data.net_forces_w[0][18][2]
+                ])
 
     # close the simulator
     env.close()

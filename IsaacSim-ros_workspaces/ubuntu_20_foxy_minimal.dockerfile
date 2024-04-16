@@ -103,4 +103,4 @@ RUN cd ${WORKDIR} && mkdir build_ws
 COPY foxy_ws build_ws
 
 # Build the added workspace
-RUN /bin/bash -c "source ${ROS_ROOT}/install/setup.sh && cd build_ws && colcon build --packages-select custom_message --merge-install"
+RUN /bin/bash -c "source ${ROS_ROOT}/install/setup.sh && cd build_ws && colcon build --packages-select custom_message go2_interfaces --merge-install"
