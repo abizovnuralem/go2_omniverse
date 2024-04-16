@@ -1,0 +1,35 @@
+<package>
+  <name>cortex_control</name>
+  <version>1.0.0</version>
+  <description>NVIDIA Isaac Cortex Control ROS package.</description>
+
+  <author>Nathan Ratliff</author>
+  <maintainer email="isaac-sim@see.forums.for.help">Nathan Ratliff</maintainer>
+
+  <license>See LICENSE file.</license>
+
+  <url type="Documentation">https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html</url>
+  <url type="Forums">https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>message_generation</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>roslib</build_depend>
+  <build_depend>rosbag</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>robot_state_publisher</build_depend>
+  <build_depend>yaml-cpp</build_depend>
+  <build_depend>libgflags-dev</build_depend>
+
+  <run_depend>message_runtime</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>roslib</run_depend>
+  <run_depend>rosbag</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>robot_state_publisher</run_depend>
+  <run_depend>yaml-cpp</run_depend>
+  <run_depend>libgflags-dev</run_depend>
+</package>

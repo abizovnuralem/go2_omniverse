@@ -19,13 +19,20 @@ Go2 Ros2 Camera stream:
 </p>
 
 
+URDF real-time joints sync:
+
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/a8060b6e-e9b7-4d30-89f2-8a50b7510a2b" alt='Go2'>
+</p>
+
+
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
 3. Camera stream to ROS2 :white_check_mark: 
 4. Lidar stream to ROS2
 5. IMU data stream to ROS2
-6. URDF real-time joints sync
+6. URDF real-time joints sync :white_check_mark:
 
 ## Your feedback and support mean the world to us. 
 
@@ -51,11 +58,13 @@ https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#
 
 ## Usage
 
-Go inside the repo folder, then
-
 ```
-conda activate orbit
-python main.py
+Go inside the repo folder, first, you need to build ros2 env for your Nvidia orbit:
+1. conda activate orbit
+2. go inside IsaacSim-ros_workspaces folder
+3. execute ./build_foxy.sh or ./build_humble.sh, wait some time then source your ros2 env using source build_ws/foxy/foxy_ws/install/setup.bash or humble version
+4. go back to the root folder
+5. python main.py
 ```
 
 ## Development

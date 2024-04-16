@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>isaac_ros_navigation_goal</name>
+  <version>0.1.0</version>
+  <description>Package to set goals for navigation stack.</description>
+
+  <maintainer email="isaac-sim@todo.todo">isaac sim</maintainer>
+  
+  <license>Copyright (c) 2022, NVIDIA CORPORATION. All rights reserved.
+    NVIDIA CORPORATION and its licensors retain all intellectual property
+    and proprietary rights in and to this software, related documentation
+    and any modifications thereto.  Any use, reproduction, disclosure or
+    distribution of this software and related documentation without an express
+    license agreement from NVIDIA CORPORATION is strictly prohibited.</license>
+
+
+  <url type="Documentation">https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html</url>
+  <url type="Forums">https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation</url>
+  <url type="Website">https://developer.nvidia.com/isaac-ros-gems/</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>actionlib</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>move_base_msgs</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_export_depend>actionlib</build_export_depend>
+  <build_export_depend>geometry_msgs</build_export_depend>
+  <build_export_depend>move_base_msgs</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>sensor_msgs</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <exec_depend>actionlib</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>move_base_msgs</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+
+  <!-- The export tag contains other, unspecified, tags -->
+  <export>
+    <!-- Other tools can request additional information be placed here -->
+
+  </export>
+</package>

@@ -1,0 +1,8 @@
+noetic_ws/build
+noetic_ws/devel
+foxy_ws/build
+foxy_ws/install
+foxy_ws/log
+humble_ws/build
+humble_ws/install
+humble_ws/log

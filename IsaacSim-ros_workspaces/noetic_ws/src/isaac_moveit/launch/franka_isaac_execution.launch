@@ -1,0 +1,34 @@
+<launch>
+  <param name="use_sim_time" value="true" />
+
+  <arg name="debug" default="false" />
+  <arg name="pipeline" default="ompl" />
+
+  <arg name="use_gui" default="false" />
+
+  <node pkg="isaac_moveit" name="panda_combined_joints_publisher" type="panda_combined_joints_publisher.py" />
+
+  <include file="$(find panda_moveit_config)/launch/planning_context.launch">
+    <arg name="load_robot_description" value="true"/>
+  </include>
+
+  <node name="joint_state_desired_publisher" pkg="topic_tools" type="relay" args="/joint_states /joint_states_desired" />
+  <node name="joint_command_publisher" pkg="topic_tools" type="relay" args="/move_group/fake_controller_joint_states /joint_command_desired" />
+  
+  
+  <include file="$(find panda_moveit_config)/launch/move_group.launch">
+    <arg name="allow_trajectory_execution" value="true"/>
+    <arg name="moveit_controller_manager" value="fake"/>
+    <arg name="info" value="true"/>
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="pipeline" value="$(arg pipeline)"  />
+  </include>
+
+  <arg name="rviz_command_args" value="-d $(find isaac_moveit)/rviz/isaac_moveit_config.rviz" />
+
+  <node name="$(anon rviz)" pkg="rviz" type="rviz" respawn="false"
+	args="$(arg rviz_command_args)" output="screen">
+    <rosparam command="load" file="$(find panda_moveit_config)/config/kinematics.yaml"/>
+  </node>
+
+</launch>

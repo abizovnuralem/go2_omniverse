@@ -1,0 +1,10 @@
+<launch>
+    <param name="map_yaml_path" value="$(find isaac_ros_navigation_goal)/assets/carter_warehouse_navigation.yaml" />
+    <param name="iteration_count" type="int" value="3" />
+    <param name="goal_generator_type" type="str" value="RandomGoalGenerator" />
+    <param name="action_server_name" type="str" value="move_base" />
+    <param name="obstacle_search_distance_in_meters" type="double" value="0.2" />
+    <param name="goal_text_file_path" value="$(find isaac_ros_navigation_goal)/assets/goals.txt" />
+    <rosparam param="initial_pose">[-6.0, -1.0, 0, 0, 0, 1.0, 0] </rosparam>
+    <node name="set_navigation_goal" pkg="isaac_ros_navigation_goal" type="set_goal.py" output="screen"/>
+</launch>

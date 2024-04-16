@@ -32,7 +32,7 @@ def create_front_cam_omnigraph():
     keys = og.Controller.Keys
 
     graph_path = "/ROS_" + "front_cam"
-    (camera_graph, _, _, _) = og.Controller.edit(
+    og.Controller.edit(
         {
             "graph_path": graph_path,
             "evaluator_name": "execution",

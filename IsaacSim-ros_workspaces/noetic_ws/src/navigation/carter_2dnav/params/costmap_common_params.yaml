@@ -1,0 +1,6 @@
+obstacle_range: 25
+raytrace_range: 3
+robot_radius: 0.36
+cost_scaling_factor: 3.0
+observation_sources: laser_scan_sensor
+laser_scan_sensor: {sensor_frame: carter_lidar, data_type: LaserScan, topic: scan, marking: true, clearing: true}

@@ -27,6 +27,8 @@
 
 from __future__ import annotations
 
+from ros2 import RobotBaseNode
+
 
 """Launch Isaac Sim Simulator first."""
 import argparse
@@ -98,7 +100,7 @@ from omni.isaac.orbit.managers import RewardTermCfg as RewTerm
 from omni.isaac.orbit.managers import SceneEntityCfg
 from omni.isaac.orbit.managers import TerminationTermCfg as DoneTerm
 from omni.isaac.orbit.scene import InteractiveSceneCfg
-from omni.isaac.orbit.sensors import ContactSensorCfg, RayCasterCfg, patterns, CameraCfg
+from omni.isaac.orbit.sensors import ContactSensorCfg, RayCasterCfg, patterns, CameraCfg, RayCasterCameraCfg
 from omni.isaac.orbit.terrains import TerrainImporterCfg
 from omni.isaac.orbit.utils import configclass
 from omni.isaac.orbit.utils.noise import AdditiveUniformNoiseCfg as Unoise
@@ -114,6 +116,9 @@ from dataclasses import MISSING
 from omnigraph import create_front_cam_omnigraph
 from agent_cfg import unitree_go2_agent_cfg
 from terrain_cfg import ROUGH_TERRAINS_CFG
+
+
+import rclpy
 
 
 base_command = [0, 0, 0]
@@ -157,6 +162,15 @@ class MySceneCfg(InteractiveSceneCfg):
         ),
         offset=CameraCfg.OffsetCfg(pos=(0.510, 0.0, 0.015), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
     )
+
+    lidar = RayCasterCfg(
+        prim_path="{ENV_REGEX_NS}/Robot/base",
+        offset=RayCasterCfg.OffsetCfg(pos=(10.0, 0.0, 20.0)),
+        pattern_cfg=patterns.BpearlPatternCfg(horizontal_fov=360.0, horizontal_res=10.0),
+        debug_vis=True,
+        mesh_prim_paths=["/World/ground"],
+    )
+
     height_scanner = RayCasterCfg(
         prim_path="{ENV_REGEX_NS}/Robot/base",
         offset=RayCasterCfg.OffsetCfg(pos=(0.0, 0.0, 20.0)),
@@ -165,12 +179,15 @@ class MySceneCfg(InteractiveSceneCfg):
         debug_vis=False,
         mesh_prim_paths=["/World/ground"],
     )
+
     contact_forces = ContactSensorCfg(prim_path="{ENV_REGEX_NS}/Robot/.*", history_length=3, track_air_time=True)
+    
     # lights
     light = AssetBaseCfg(
         prim_path="/World/light",
         spawn=sim_utils.DistantLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
     )
+
     sky_light = AssetBaseCfg(
         prim_path="/World/skyLight",
         spawn=sim_utils.DomeLightCfg(color=(0.13, 0.13, 0.13), intensity=1000.0),
@@ -352,8 +369,12 @@ class LocomotionVelocityRoughEnvCfg(RLTaskEnvCfg):
         # we tick all the sensors based on the smallest update period (physics update period)
         if self.scene.height_scanner is not None:
             self.scene.height_scanner.update_period = self.decimation * self.sim.dt
+        
         if self.scene.contact_forces is not None:
             self.scene.contact_forces.update_period = self.sim.dt
+        
+        if self.scene.lidar is not None:
+            self.scene.lidar.update_period = self.sim.dt
 
         # check if terrain levels curriculum is enabled - if so, enable curriculum for terrain generator
         # this generates terrains with increasing difficulty and is useful for training
@@ -411,6 +432,7 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
         base_command = [0, 0, 0]
     return True
 
+
 def main():
 
     # acquire input interface
@@ -435,6 +457,7 @@ def main():
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg["experiment_name"])
     log_root_path = os.path.abspath(log_root_path)
     print(f"[INFO] Loading experiment from directory: {log_root_path}")
+
     resume_path = get_checkpoint_path(log_root_path, agent_cfg["load_run"], agent_cfg["load_checkpoint"])
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
@@ -448,14 +471,27 @@ def main():
 
     # reset environment
     obs, _ = env.get_observations()
+
+    # initialize ROS2 node
+    rclpy.init()
+    base_node = RobotBaseNode()
+
     # simulate environment
     while simulation_app.is_running():
         # run everything in inference mode
         with torch.inference_mode():
             # agent stepping
             actions = policy(obs)
+
             # env stepping
             obs, _, _, _ = env.step(actions)
+
+
+            # publish joint states
+            base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[0])
+
+            print("-------------------------------")
+            print("Received max contact force of: ", env.env.scene["contact_forces"].data.net_forces_w)
 
     # close the simulator
     env.close()

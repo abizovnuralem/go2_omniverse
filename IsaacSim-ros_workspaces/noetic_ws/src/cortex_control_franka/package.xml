@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package format="2">
+    <name>cortex_control_franka</name>
+    <version>0.1.0</version>
+    <description>Cortex Control ROS extensions with Franka ROS dependencies.</description>
+    <maintainer email="isaac-sim@see.forums.for.help">Nathan Ratliff</maintainer>
+    <license>BSD</license>
+    
+    <url type="Documentation">https://docs.omniverse.nvidia.com/app_isaacsim/app_isaacsim/overview.html</url>
+    <url type="Forums">https://forums.developer.nvidia.com/c/agx-autonomous-machines/isaac/simulation</url>
+
+    <buildtool_depend>catkin</buildtool_depend>
+
+    <depend>controller_interface</depend>
+    <depend>dynamic_reconfigure</depend>
+    <depend>franka_hw</depend>
+    <depend>hardware_interface</depend>
+    <depend>cortex_control</depend>
+    <depend>pluginlib</depend>
+    <depend>realtime_tools</depend>
+    <depend>roscpp</depend>
+    <depend>std_msgs</depend>
+
+    <export>
+        <controller_interface plugin="${prefix}/plugin.xml"/>
+    </export>
+</package>
