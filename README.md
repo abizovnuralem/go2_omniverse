@@ -78,6 +78,10 @@ Go inside the repo folder, first, you need to build ros2 env for your Nvidia orb
 7. python main.py
 ```
 
+## ROS2 SDK
+
+You can use https://github.com/abizovnuralem/go2_ros2_sdk as a basement for your ROS2 setup.
+
 ## Development
 
 To contribute or modify the project, refer to these resources for implementing additional features or improving the existing codebase. PRs are welcome!
