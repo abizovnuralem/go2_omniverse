@@ -25,6 +25,12 @@ URDF real-time joints sync:
 <img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/a8060b6e-e9b7-4d30-89f2-8a50b7510a2b" alt='Go2'>
 </p>
 
+Foot force data stream:
+
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/95a34b03-471e-496a-88cc-38e7c4e1906d" alt='Go2'>
+</p>
+
 
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
@@ -33,7 +39,7 @@ URDF real-time joints sync:
 4. Lidar stream to ROS2
 5. IMU data stream to ROS2 :white_check_mark: 
 6. URDF real-time joints sync :white_check_mark:
-7. Foot force data stream
+7. Foot force data stream :white_check_mark:
 8. Real-time control from ROS2
 
 ## Your feedback and support mean the world to us. 
