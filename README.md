@@ -61,8 +61,9 @@ Together, let's push the boundaries of what's possible with the Unitree Go2 and 
 
 
 ## System requirements
-You need to install Ubuntu 20.04 with Nvidia Isaac Sim and Nvidia Orbit.
-The full instruction:
+You need to install Ubuntu 20.04, Nvidia Isaac Sim, Nvidia Orbit and Docker 
+
+full instruction:
 ```
 https://isaac-orbit.github.io/orbit/source/setup/installation.html
 ```
