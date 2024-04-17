@@ -33,6 +33,7 @@ import argparse
 from omni.isaac.orbit.app import AppLauncher
 
 
+
 # local imports
 import cli_args  # isort: skip
 
@@ -99,6 +100,8 @@ from omni.isaac.orbit.managers import SceneEntityCfg
 from omni.isaac.orbit.managers import TerminationTermCfg as DoneTerm
 from omni.isaac.orbit.scene import InteractiveSceneCfg
 from omni.isaac.orbit.sensors import ContactSensorCfg, RayCasterCfg, patterns, CameraCfg, RayCasterCameraCfg
+from omni.isaac.sensor import LidarRtx
+
 from omni.isaac.orbit.terrains import TerrainImporterCfg
 from omni.isaac.orbit.utils import configclass
 from omni.isaac.orbit.utils.noise import AdditiveUniformNoiseCfg as Unoise
@@ -118,7 +121,9 @@ from terrain_cfg import ROUGH_TERRAINS_CFG
 
 import rclpy
 from ros2 import RobotBaseNode
-
+from pxr import Gf
+import omni.replicator.core as rep
+from omni.isaac.core import SimulationContext
 
 base_command = [0, 0, 0]
 
@@ -159,15 +164,7 @@ class MySceneCfg(InteractiveSceneCfg):
         spawn=sim_utils.PinholeCameraCfg(
             focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
         ),
-        offset=CameraCfg.OffsetCfg(pos=(0.510, 0.0, 0.015), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
-    )
-
-    lidar = RayCasterCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/base",
-        offset=RayCasterCfg.OffsetCfg(pos=(10.0, 0.0, 20.0)),
-        pattern_cfg=patterns.BpearlPatternCfg(horizontal_fov=360.0, horizontal_res=10.0),
-        debug_vis=True,
-        mesh_prim_paths=["/World/ground"],
+        offset=CameraCfg.OffsetCfg(pos=(0.32487, -0.00095, 0.05362), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
     )
 
     height_scanner = RayCasterCfg(
@@ -372,9 +369,6 @@ class LocomotionVelocityRoughEnvCfg(RLTaskEnvCfg):
         if self.scene.contact_forces is not None:
             self.scene.contact_forces.update_period = self.sim.dt
         
-        if self.scene.lidar is not None:
-            self.scene.lidar.update_period = self.sim.dt
-
         # check if terrain levels curriculum is enabled - if so, enable curriculum for terrain generator
         # this generates terrains with increasing difficulty and is useful for training
         if getattr(self.curriculum, "terrain_levels", None) is not None:
@@ -431,7 +425,6 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
         base_command = [0, 0, 0]
     return True
 
-
 def main():
 
     # acquire input interface
@@ -475,6 +468,31 @@ def main():
     rclpy.init()
     base_node = RobotBaseNode()
 
+    _, sensor = omni.kit.commands.execute(
+        "IsaacSensorCreateRtxLidar",
+        path="/World/envs/env_0/Robot/base/lidar",
+        parent=None,
+        config="Example_Rotary",
+        translation=(0.28945, 0, -0.046825),
+        orientation=Gf.Quatd(0.131316, 0.9913406, 0.0, 0.0),
+    )
+
+    # # RTX sensors are cameras and must be assigned to their own render product
+    hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
+
+    writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+    writer.initialize(topicName="point_cloud2", frameId="odom")
+    writer.attach([hydra_texture])
+
+    # Create the debug draw pipeline in the post process graph
+    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
+    writer.attach([hydra_texture])
+
+    # Create LaserScan publisher pipeline in the post process graph
+    writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
+    writer.initialize(topicName="scan", frameId="odom")
+    writer.attach([hydra_texture])
+
     # simulate environment
     while simulation_app.is_running():
         # run everything in inference mode
@@ -494,7 +512,7 @@ def main():
                 env.env.scene["contact_forces"].data.net_forces_w[0][14][2], 
                 env.env.scene["contact_forces"].data.net_forces_w[0][18][2]
                 ])
-
+            
     # close the simulator
     env.close()
 

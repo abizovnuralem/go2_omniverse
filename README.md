@@ -32,15 +32,24 @@ Foot force data stream:
 </p>
 
 
+Real-time RTX lidar stream:
+
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/a5c80f26-7a73-4271-93e2-d41bd152751c" alt='Go2'>
+</p>
+
+
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
 3. Camera stream to ROS2 :white_check_mark: 
-4. Lidar stream to ROS2
+4. RTX Lidar stream to ROS2
 5. IMU data stream to ROS2 :white_check_mark: 
 6. URDF real-time joints sync :white_check_mark:
 7. Foot force data stream :white_check_mark:
 8. Real-time control from ROS2
+9. Nav2 with Slam_toolbox
+10. Bunch of RL-envs for custom dog training
 
 ## Your feedback and support mean the world to us. 
 
@@ -87,6 +96,9 @@ You can use https://github.com/abizovnuralem/go2_ros2_sdk as a basement for your
 ## Development
 
 To contribute or modify the project, refer to these resources for implementing additional features or improving the existing codebase. PRs are welcome!
+
+## Thanks
+Special thanks to Leul Tesfaye for his expertise in Orbit lidars
 
 ## License
 
