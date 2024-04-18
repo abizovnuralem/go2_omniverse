@@ -30,6 +30,9 @@ from sensor_msgs.msg import JointState
 from geometry_msgs.msg import TransformStamped
 from tf2_ros import TransformBroadcaster
 from go2_interfaces.msg import Go2State
+from std_msgs.msg import Header
+from sensor_msgs.msg import PointCloud2, PointField
+from sensor_msgs_py import point_cloud2
 
 
 class RobotBaseNode(Node):
@@ -38,6 +41,7 @@ class RobotBaseNode(Node):
         qos_profile = QoSProfile(depth=10)
         self.joint_pub = self.create_publisher(JointState, 'joint_states', qos_profile)
         self.go2_state_pub = self.create_publisher(Go2State, 'go2_states', qos_profile)
+        self.go2_lidar_pub = self.create_publisher(PointCloud2, 'point_cloud2', qos_profile)
         self.broadcaster = TransformBroadcaster(self, qos=qos_profile)
         
     def publish_joints(self, joint_names_lst, joint_state_lst):
@@ -71,7 +75,6 @@ class RobotBaseNode(Node):
         odom_trans.transform.rotation.w = base_rot[0].item()
         self.broadcaster.sendTransform(odom_trans)
 
-
     def publish_robot_state(self, foot_force_lst):
 
         go2_state = Go2State()
@@ -81,6 +84,19 @@ class RobotBaseNode(Node):
             int(foot_force_lst[2].item()), 
             int(foot_force_lst[3].item())]
         self.go2_state_pub.publish(go2_state) 
+
+
+    def publish_lidar(self, points):
+
+        point_cloud = PointCloud2()
+        point_cloud.header = Header(frame_id="odom")
+        fields = [
+            PointField(name='x', offset=0, datatype=PointField.FLOAT32, count=1),
+            PointField(name='y', offset=4, datatype=PointField.FLOAT32, count=1),
+            PointField(name='z', offset=8, datatype=PointField.FLOAT32, count=1),
+        ]
+        point_cloud = point_cloud2.create_cloud(point_cloud.header, fields, points)
+        self.go2_lidar_pub.publish(point_cloud)
 
 
     async def run(self):

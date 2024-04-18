@@ -27,6 +27,8 @@
 
 from __future__ import annotations
 
+import numpy as np
+
 
 """Launch Isaac Sim Simulator first."""
 import argparse
@@ -112,6 +114,7 @@ from rsl_rl.runners import OnPolicyRunner
 
 from typing import Literal
 from dataclasses import MISSING
+from scipy.spatial.transform import Rotation
 
 
 from omnigraph import create_front_cam_omnigraph
@@ -425,6 +428,16 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
         base_command = [0, 0, 0]
     return True
 
+
+def update_meshes_for_cloud2(position_array, origin, rot):
+    q = rot.cpu().numpy()
+    rotation = Rotation.from_quat([q[1], q[2], q[3], q[0]])
+    rotated_vectors = rotation.apply(position_array)
+    # Recalculate origin
+    rotated_vectors += origin.cpu().numpy()
+    return rotated_vectors
+
+
 def main():
 
     # acquire input interface
@@ -474,24 +487,30 @@ def main():
         parent=None,
         config="Example_Rotary",
         translation=(0.28945, 0, -0.046825),
-        orientation=Gf.Quatd(0.131316, 0.9913406, 0.0, 0.0),
+        orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
     )
 
     # # RTX sensors are cameras and must be assigned to their own render product
     hydra_texture = rep.create.render_product(sensor.GetPath(), [1, 1], name="Isaac")
 
-    writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
-    writer.initialize(topicName="point_cloud2", frameId="odom")
-    writer.attach([hydra_texture])
+    # writer = rep.writers.get("RtxLidar" + "ROS2PublishPointCloud")
+    # writer.initialize(topicName="point_cloud2", frameId="odom")
+    # writer.attach([hydra_texture])
 
     # Create the debug draw pipeline in the post process graph
-    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
-    writer.attach([hydra_texture])
+    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
+    # writer.attach([hydra_texture])
 
     # Create LaserScan publisher pipeline in the post process graph
-    writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
-    writer.initialize(topicName="scan", frameId="odom")
-    writer.attach([hydra_texture])
+    # writer = rep.writers.get("RtxLidar" + "ROS2PublishLaserScan")
+    # writer.initialize(topicName="scan", frameId="odom")
+    # writer.attach([hydra_texture])
+
+    annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
+    annotator.attach(hydra_texture)
+
+    import time
+    start_time = time.time()
 
     # simulate environment
     while simulation_app.is_running():
@@ -504,14 +523,27 @@ def main():
             obs, _, _, _ = env.step(actions)
 
             # publish ros2 info
-            base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[0])
-            base_node.publish_odom(env.env.scene["robot"].data.root_state_w[0, :3], env.env.scene["robot"].data.root_state_w[0, 3:7])
-            base_node.publish_robot_state([
-                env.env.scene["contact_forces"].data.net_forces_w[0][4][2], 
-                env.env.scene["contact_forces"].data.net_forces_w[0][8][2], 
-                env.env.scene["contact_forces"].data.net_forces_w[0][14][2], 
-                env.env.scene["contact_forces"].data.net_forces_w[0][18][2]
-                ])
+            
+            try:
+                if (time.time() - start_time) > 1/5:
+                    base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[0])
+                    base_node.publish_odom(env.env.scene["robot"].data.root_state_w[0, :3], env.env.scene["robot"].data.root_state_w[0, 3:7])
+
+                    base_node.publish_robot_state([
+                        env.env.scene["contact_forces"].data.net_forces_w[0][4][2], 
+                        env.env.scene["contact_forces"].data.net_forces_w[0][8][2], 
+                        env.env.scene["contact_forces"].data.net_forces_w[0][14][2], 
+                        env.env.scene["contact_forces"].data.net_forces_w[0][18][2]
+                        ])
+                    data = annotator.get_data()
+                    point_cloud = update_meshes_for_cloud2(
+                        data['data'], env.env.scene["robot"].data.root_state_w[0, :3], 
+                        env.env.scene["robot"].data.root_state_w[0, 3:7]
+                        )
+                    base_node.publish_lidar(point_cloud)
+                    start_time = time.time()
+            except :
+                pass
             
     # close the simulator
     env.close()

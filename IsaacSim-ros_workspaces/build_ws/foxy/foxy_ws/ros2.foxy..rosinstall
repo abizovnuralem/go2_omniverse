@@ -187,6 +187,10 @@
     uri: https://github.com/ros2-gbp/common_interfaces-release.git
     version: release/foxy/sensor_msgs/2.0.5-1
 - git:
+    local-name: common_interfaces/sensor_msgs_py
+    uri: https://github.com/ros2-gbp/common_interfaces-release.git
+    version: release/foxy/sensor_msgs_py/2.0.5-1
+- git:
     local-name: common_interfaces/std_msgs
     uri: https://github.com/ros2-gbp/common_interfaces-release.git
     version: release/foxy/std_msgs/2.0.5-1
