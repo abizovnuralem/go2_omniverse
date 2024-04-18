@@ -39,11 +39,17 @@ Real-time RTX lidar stream:
 </p>
 
 
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/ca4577bf-549f-450d-81a8-68f8dfa0a1c0" alt='Go2'>
+</p>
+
+
+
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
 3. Camera stream to ROS2 :white_check_mark: 
-4. RTX Lidar stream to ROS2 :white_check_mark: 
+4. RTX Lidar stream to ROS2 :white_check_mark: (slow, need to fix that)
 5. IMU data stream to ROS2 :white_check_mark: 
 6. URDF real-time joints sync :white_check_mark:
 7. Foot force data stream :white_check_mark:
