@@ -1,0 +1,92 @@
+[core]
+reloadable = true
+order = 0
+
+[package]
+version = "9.11.1"
+category = "Simulation"
+title = "Isaac Sim Isaac Sensor Simulation"
+description = "Support physics based sensors, such as contact sensors and imu sensors"
+authors = ["NVIDIA"]
+repository = ""
+keywords = ["isaac", "physics", "robotics"]
+changelog = "docs/CHANGELOG.md"
+readme = "docs/README.md"
+preview_image = "data/preview.png"
+icon = "data/icon.png"
+writeTarget.kit = true
+
+[dependencies]
+"omni.kit.uiapp" = {}
+"omni.physx" = {}
+"omni.timeline" = {} # Needed for simulation to occur
+"omni.kit.numpy.common" = {}
+"omni.kit.pip_archive" = {} # pulls in numpy
+"omni.isaac.ui" = {}
+"omni.isaac.core" = {}
+"omni.isaac.range_sensor" = {}
+"omni.isaac.core_nodes" = {}
+"omni.usd.schema.isaac" = {}
+"omni.isaac.debug_draw" = {}
+"omni.graph" = {}
+"omni.graph.action" = {}
+"omni.syntheticdata" = {}
+"omni.replicator.core" = {}
+"omni.usd" = {} # needed for call to add aov
+"usdrt.scenegraph" = {}
+"omni.sensors.nv.lidar" = {}
+"omni.sensors.nv.radar" = {}
+
+[[python.module]]
+name = "omni.isaac.sensor"
+
+[[python.module]]
+name = "omni.isaac.sensor.tests"
+public = false
+
+[[python.module]]
+name = "omni.isaac.sensor.scripts.samples.contact_sensor"
+
+[[python.module]]
+name = "omni.isaac.sensor.scripts.samples.imu_sensor"
+
+[[native.plugin]]
+path = "bin/*.plugin"
+recursive = false
+
+[settings]
+app.sensors.nv.lidar.profileBaseFolder=[
+    "${app}/../data/sensors/lidar/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/HESAI/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/NVIDIA/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Ouster/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/SICK/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/SLAMTEC/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Velodyne/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/ZVISION/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/Unitree/",
+    "${app}/../exts/omni.isaac.sensor/data/lidar_configs/"]
+app.sensors.nv.radar.runWithoutMBVH = true
+# app.sensors.nv.lidar.enableVelocity=true
+rtx.rtxsensor.coordinateFrameQuaternion = "0.0,0.0,0.0,1.0"
+# sensor material mapping is hard coded for now, and this is needed to enable sensor materials.
+rtx.materialDb.rtSensorNameToIdMap="DefaultMaterial:0;AsphaltStandardMaterial:1;AsphaltWeatheredMaterial:2;VegetationGrassMaterial:3;WaterStandardMaterial:4;GlassStandardMaterial:5;FiberGlassStandardMaterial:6;MetalAlloyMaterial:7;MetalAluminumMaterial:8;MetalAluminumOxidizedMaterial:9;PlasticStandardMaterial:10;RetroMarkingsMaterial:11;RetroSignMaterial:12;RubberStandardMaterial:13;SoilClayMaterial:14;ConcreteRoughMaterial:15;ConcreteSmoothMaterial:16;OakTreeBarkMaterial:17;FabricStandardMaterial:18;PlexiGlassStandardMaterial:19;MetalSilverMaterial:20"
+#renderer.raytracingMotion.enabled=true
+
+[[test]]
+timeout=900
+dependencies = [
+    "omni.hydra.rtx",                       # "omni.hydra.pxr", Can we run and pass with Storm ?
+    "omni.kit.viewport.utility",
+    "omni.kit.viewport.window",
+    "omni.kit.primitive.mesh",
+    "omni.kit.material.library",
+]
+
+stdoutFailPatterns.exclude = [
+    # This is excluded in at least 3 kit tests.
+    "*Missing call to destroyResourceBindingSignature()*",
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadContactSensor: [/TestGraph] OmniGraph Error: Invalid contact sensor prim*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadEffortSensor: [/TestGraph] OmniGraph Error: Failed to create effort sensor, unable to find prim path*',
+    '*[Error] [omni.graph.core.plugin] /TestGraph/Template_omni_isaac_sensor_IsaacReadIMU: [/TestGraph] OmniGraph Error: Invalid Imu sensor prim*',
+]

@@ -35,21 +35,15 @@ Foot force data stream:
 Real-time RTX lidar stream:
 
 <p align="center">
-<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/a5c80f26-7a73-4271-93e2-d41bd152751c" alt='Go2'>
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/3f078bf2-e4b6-45ca-8807-36537a4125b5" alt='Go2'>
 </p>
-
-
-<p align="center">
-<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/ca4577bf-549f-450d-81a8-68f8dfa0a1c0" alt='Go2'>
-</p>
-
 
 
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
 3. Camera stream to ROS2 :white_check_mark: 
-4. RTX Lidar stream to ROS2 :white_check_mark: (slow, need to fix that)
+4. RTX Lidar stream to ROS2 :white_check_mark:
 5. IMU data stream to ROS2 :white_check_mark: 
 6. URDF real-time joints sync :white_check_mark:
 7. Foot force data stream :white_check_mark:
@@ -80,6 +74,16 @@ Also, you need to install ROS2 on your system and configure it:
 https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#isaac-sim-app-install-ros
 ```
 
+## Setup the Unitree L1 Lidar:
+
+First, you need to copy files from Isaac Sim folder to your local Isaac Sim installation in order to use Unitree L1 lidar inside Orbit.
+
+```
+1. You need to replace original file that located in ~/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.isaac.sensor/config/extrensiom.toml 
+with Isaac_sim/extension.toml
+2. You need to add Unitree folder that is inside Isaac_sim folder to  ~/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.isaac.sensor/data/lidar_configs/
+```
+
 ## Usage
 Go inside the repo folder, first, you need to build ros2 env for your Nvidia orbit:
 
@@ -98,7 +102,11 @@ You can control the dog using "WASD" keyboard commands
 
 ## ROS2 SDK
 
-You can use https://github.com/abizovnuralem/go2_ros2_sdk as a basement for your ROS2 setup.
+You can use https://github.com/abizovnuralem/go2_ros2_sdk or https://github.com/unitreerobotics/unitree_ros2 as a basement for your ROS2 setup.
+
+## Easy start
+
+For you onvenience I wrote two launche files: run_orbit.sh and build_and_run_orbit.sh
 
 ## Development
 
