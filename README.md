@@ -106,7 +106,7 @@ You can use https://github.com/abizovnuralem/go2_ros2_sdk or https://github.com/
 
 ## Easy start
 
-For you onvenience I wrote two launche files: run_orbit.sh and build_and_run_orbit.sh
+For you convenience I wrote two launche files: run_orbit.sh and build_and_run_orbit.sh
 
 ## Development
 
