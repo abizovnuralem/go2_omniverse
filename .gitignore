@@ -4,5 +4,4 @@ install
 .vscode
 __pycache__
 .env
-IsaacSim-ros_workspaces/build_ws/foxy/foxy_ws/src/
-IsaacSim-ros_workspaces/build_ws/foxy/isaac_sim_ros_ws/
+IsaacSim-ros_workspaces/build_ws
