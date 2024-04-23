@@ -380,7 +380,7 @@ class LocomotionVelocityRoughEnvCfg(RLTaskEnvCfg):
                 self.scene.terrain.terrain_generator.curriculum = False
 
 @configclass
-class UnitreeGo2RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
+class UnitreeGo2CustomEnvCfg(LocomotionVelocityRoughEnvCfg):
     def __post_init__(self):
         # post init of parent
         super().__post_init__()
@@ -446,7 +446,7 @@ def main():
 
     """Play with RSL-RL agent."""
     # parse configuration
-    env_cfg = UnitreeGo2RoughEnvCfg()
+    env_cfg = UnitreeGo2CustomEnvCfg()
     env_cfg.scene.num_envs = 1
     
     agent_cfg: RslRlOnPolicyRunnerCfg = unitree_go2_agent_cfg
