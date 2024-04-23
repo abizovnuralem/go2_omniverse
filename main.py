@@ -446,9 +446,9 @@ def main():
 
     """Play with RSL-RL agent."""
     # parse configuration
-    env_cfg = parse_env_cfg(
-        args_cli.task, use_gpu=not args_cli.cpu, num_envs=args_cli.num_envs, use_fabric=not args_cli.disable_fabric
-    )
+    env_cfg = UnitreeGo2RoughEnvCfg()
+    env_cfg.scene.num_envs = 1
+    
     agent_cfg: RslRlOnPolicyRunnerCfg = unitree_go2_agent_cfg
 
     # create isaac environment

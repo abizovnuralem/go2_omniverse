@@ -85,14 +85,15 @@ with Isaac_sim/extension.toml
 ```
 
 ## Usage
+The current project was tested on Ubuntu 20.04 (foxy ros2 bridge), IsaacSim 2023.1.1 with Orbit 0.2.0 and Nvidia Driver Version: 535.171.04 with CUDA Version: 12.2.
 Go inside the repo folder, first, you need to build ros2 env for your Nvidia orbit:
 
 
 ```
 1. go inside IsaacSim-ros_workspaces folder
-2. execute ./build_foxy.sh or ./build_humble.sh (it was not tested)
-3. source build_ws/foxy/foxy_ws/install/setup.bash or humble (it was not tested)
-4. source build_ws/foxy/isaac_sim_ros_ws/install/local_setup.bash or humble (it was not tested))
+2. execute ./build_foxy.sh or ./build_humble.sh (not tested)
+3. source build_ws/foxy/foxy_ws/install/setup.bash or humble (not tested)
+4. source build_ws/foxy/isaac_sim_ros_ws/install/local_setup.bash or humble (not tested))
 5. go back to the root folder
 6. conda activate orbit
 7. python main.py
