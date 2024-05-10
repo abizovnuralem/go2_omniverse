@@ -33,9 +33,9 @@ import argparse
 from omni.isaac.orbit.app import AppLauncher
 
 
-
 # local imports
 import cli_args  # isort: skip
+import time
 
 
 # add argparse arguments
@@ -155,18 +155,18 @@ class MySceneCfg(InteractiveSceneCfg):
     # robots
     robot: ArticulationCfg = MISSING
 
-    # sensors
-    camera = CameraCfg(
-        prim_path="{ENV_REGEX_NS}/Robot/base/front_cam",
-        update_period=0.1,
-        height=480,
-        width=640,
-        data_types=["rgb", "distance_to_image_plane"],
-        spawn=sim_utils.PinholeCameraCfg(
-            focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
-        ),
-        offset=CameraCfg.OffsetCfg(pos=(0.32487, -0.00095, 0.05362), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
-    )
+    # sensors TODO NEED TO FIX THIS
+    # camera = CameraCfg(
+    #     prim_path="{ENV_REGEX_NS}/Robot/base/front_cam",
+    #     update_period=0.1,
+    #     height=480,
+    #     width=640,
+    #     data_types=["rgb", "distance_to_image_plane"],
+    #     spawn=sim_utils.PinholeCameraCfg(
+    #         focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
+    #     ),
+    #     offset=CameraCfg.OffsetCfg(pos=(0.32487, -0.00095, 0.05362), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
+    # )
 
     height_scanner = RayCasterCfg(
         prim_path="{ENV_REGEX_NS}/Robot/base",
@@ -486,13 +486,12 @@ def main():
                                          )
 
     # Create the debug draw pipeline in the post process graph
-    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
-    writer.attach([lidar_sensor.get_render_product_path()])
+    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
+    # writer.attach([lidar_sensor.get_render_product_path()])
 
     annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
     annotator.attach(lidar_sensor.get_render_product_path())
 
-    import time
     start_time = time.time()
 
     # simulate environment
@@ -517,9 +516,7 @@ def main():
     
             try:
                 if (time.time() - start_time) > 1/20:
-                    
                     data = annotator.get_data()
-                    print(f"data: {data['data'].shape}")
                     point_cloud = update_meshes_for_cloud2(
                         data['data'], env.env.scene["robot"].data.root_state_w[0, :3], 
                         env.env.scene["robot"].data.root_state_w[0, 3:7]
