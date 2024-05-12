@@ -100,7 +100,7 @@ from omni.isaac.orbit.managers import RewardTermCfg as RewTerm
 from omni.isaac.orbit.managers import SceneEntityCfg
 from omni.isaac.orbit.managers import TerminationTermCfg as DoneTerm
 from omni.isaac.orbit.scene import InteractiveSceneCfg
-from omni.isaac.orbit.sensors import ContactSensorCfg, RayCasterCfg, patterns, CameraCfg
+from omni.isaac.orbit.sensors import ContactSensorCfg, RayCasterCfg, patterns, CameraCfg, Camera
 from omni.isaac.sensor import LidarRtx
 
 from omni.isaac.orbit.terrains import TerrainImporterCfg
@@ -142,19 +142,6 @@ class MySceneCfg(InteractiveSceneCfg):
 
     # robots
     robot: ArticulationCfg = MISSING
-
-    # sensors TODO NEED TO FIX THIS
-    # camera = CameraCfg(
-    #     prim_path="{ENV_REGEX_NS}/Robot/base/front_cam",
-    #     update_period=0.1,
-    #     height=480,
-    #     width=640,
-    #     data_types=["rgb", "distance_to_image_plane"],
-    #     spawn=sim_utils.PinholeCameraCfg(
-    #         focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
-    #     ),
-    #     offset=CameraCfg.OffsetCfg(pos=(0.32487, -0.00095, 0.05362), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
-    # )
 
     height_scanner = RayCasterCfg(
         prim_path="{ENV_REGEX_NS}/Robot/base",
@@ -439,6 +426,7 @@ def setup_custom_env():
         print("Error loading custom environment. You should download custom envs folder from: https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing")
 
 
+
 def main():
 
     # acquire input interface
@@ -461,7 +449,6 @@ def main():
     env = RslRlVecEnvWrapper(env)
 
     
-
     # specify directory for logging experiments
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg["experiment_name"])
     log_root_path = os.path.abspath(log_root_path)
@@ -490,7 +477,21 @@ def main():
                                          orientation=(1.0, 0.0, 0.0, 0.0),
                                          config_file_name= "Unitree_L1",
                                          )
+    
 
+    cameraCfg = CameraCfg(
+        prim_path="/World/envs/env_0/Robot/base/front_cam",
+        update_period=0.1,
+        height=480,
+        width=640,
+        data_types=["rgb"],
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
+        ),
+        offset=CameraCfg.OffsetCfg(pos=(0.32487, -0.00095, 0.05362), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
+    )
+
+    Camera(cameraCfg)
     # Create the debug draw pipeline in the post process graph
     # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
     # writer.attach([lidar_sensor.get_render_product_path()])
