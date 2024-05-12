@@ -39,6 +39,20 @@ Real-time RTX lidar stream:
 </p>
 
 
+Custom envs (Office):
+
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/e2e9bdd0-1f40-41a8-86bc-c1097ab3fd7b" alt='Go2'>
+</p>
+
+
+Custom envs (Warehouse):
+
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/5db6f331-60be-40bd-9b4b-ead44064ee44" alt='Go2'>
+</p>
+
+
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
