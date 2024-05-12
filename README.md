@@ -105,6 +105,12 @@ You can control the dog using "WASD" keyboard commands
 
 You can use https://github.com/abizovnuralem/go2_ros2_sdk or https://github.com/unitreerobotics/unitree_ros2 as a basement for your ROS2 setup.
 
+
+## Select custom env
+
+To use predifined custom envs, you need to download files from https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing and place them to /envs folder.
+Then you can execute it via python main.py --custom_env=office or python main.py --custom_env=warehouse commands
+
 ## Easy start
 
 For you convenience I wrote two launche files: run_orbit.sh and build_and_run_orbit.sh

@@ -47,6 +47,7 @@ parser.add_argument(
 parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to simulate.")
 parser.add_argument("--task", type=str, default="Isaac-Velocity-Rough-Unitree-Go2-v0", help="Name of the task.")
 parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
+parser.add_argument("--custom_env", type=str, default="office", help="Setup the environment")
 
 
 # append RSL-RL cli arguments
@@ -81,7 +82,7 @@ import carb
 import usdrt.Sdf
 
 
-from omni.isaac.orbit_tasks.utils import get_checkpoint_path, parse_env_cfg
+from omni.isaac.orbit_tasks.utils import get_checkpoint_path
 from omni.isaac.orbit_tasks.utils.wrappers.rsl_rl import (
     RslRlOnPolicyRunnerCfg,
     RslRlVecEnvWrapper
@@ -117,7 +118,6 @@ from scipy.spatial.transform import Rotation
 
 from omnigraph import create_front_cam_omnigraph
 from agent_cfg import unitree_go2_agent_cfg
-from terrain_cfg import ROUGH_TERRAINS_CFG
 
 
 import rclpy
@@ -136,22 +136,10 @@ class MySceneCfg(InteractiveSceneCfg):
     # ground terrain
     terrain = TerrainImporterCfg(
         prim_path="/World/ground",
-        terrain_type="generator",
-        terrain_generator=ROUGH_TERRAINS_CFG,
-        max_init_terrain_level=5,
-        collision_group=-1,
-        physics_material=sim_utils.RigidBodyMaterialCfg(
-            friction_combine_mode="multiply",
-            restitution_combine_mode="multiply",
-            static_friction=1.0,
-            dynamic_friction=1.0,
-        ),
-        visual_material=sim_utils.MdlFileCfg(
-            mdl_path="{NVIDIA_NUCLEUS_DIR}/Materials/Base/Architecture/Shingles_01.mdl",
-            project_uvw=True,
-        ),
+        terrain_type="plane",
         debug_vis=False,
     )
+
     # robots
     robot: ArticulationCfg = MISSING
 
@@ -317,7 +305,8 @@ class EventCfg:
 @configclass
 class CurriculumCfg:
     """Curriculum terms for the MDP."""
-    terrain_levels = CurrTerm(func=mdp.terrain_levels_vel)
+    pass
+    # terrain_levels = CurrTerm(func=mdp.terrain_levels_vel)
 
 @configclass
 class ViewerCfg:
@@ -351,7 +340,7 @@ class LocomotionVelocityRoughEnvCfg(RLTaskEnvCfg):
     rewards: RewardsCfg = RewardsCfg()
     terminations: TerminationsCfg = TerminationsCfg()
     events: EventCfg = EventCfg()
-    curriculum: CurriculumCfg = CurriculumCfg()
+    # curriculum: CurriculumCfg = CurriculumCfg()
 
     def __post_init__(self):
         """Post initialization."""
@@ -362,6 +351,7 @@ class LocomotionVelocityRoughEnvCfg(RLTaskEnvCfg):
         self.sim.dt = 0.005
         self.sim.disable_contact_processing = True
         self.sim.physics_material = self.scene.terrain.physics_material
+
         # update sensor update periods
         # we tick all the sensors based on the smallest update period (physics update period)
         if self.scene.height_scanner is not None:
@@ -436,6 +426,19 @@ def update_meshes_for_cloud2(position_array, origin, rot):
     return rotated_vectors
 
 
+def setup_custom_env():
+    try:
+        if (args_cli.custom_env == "warehouse"):
+            cfg_scene = sim_utils.UsdFileCfg(usd_path="./envs/warehouse.usd")
+            cfg_scene.func("/World/warehouse", cfg_scene, translation=(0.0, 0.0, 0.0))
+
+        if (args_cli.custom_env == "office"):
+            cfg_scene = sim_utils.UsdFileCfg(usd_path="./envs/office.usd")
+            cfg_scene.func("/World/office", cfg_scene, translation=(0.0, 0.0, 0.0))
+    except:
+        print("Error loading custom environment. You should download custom envs folder from: https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing")
+
+
 def main():
 
     # acquire input interface
@@ -446,6 +449,7 @@ def main():
 
     """Play with RSL-RL agent."""
     # parse configuration
+    
     env_cfg = UnitreeGo2CustomEnvCfg()
     env_cfg.scene.num_envs = 1
     
@@ -455,6 +459,8 @@ def main():
     env = gym.make(args_cli.task, cfg=env_cfg)
     # wrap around environment for rsl-rl
     env = RslRlVecEnvWrapper(env)
+
+    
 
     # specify directory for logging experiments
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg["experiment_name"])
@@ -493,6 +499,8 @@ def main():
     annotator.attach(lidar_sensor.get_render_product_path())
 
     start_time = time.time()
+
+    setup_custom_env()
 
     # simulate environment
     while simulation_app.is_running():
