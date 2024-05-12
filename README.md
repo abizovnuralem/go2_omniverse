@@ -39,6 +39,20 @@ Real-time RTX lidar stream:
 </p>
 
 
+Custom envs (Office):
+
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/e2e9bdd0-1f40-41a8-86bc-c1097ab3fd7b" alt='Go2'>
+</p>
+
+
+Custom envs (Warehouse):
+
+<p align="center">
+<img width="1200" height="440" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/5db6f331-60be-40bd-9b4b-ead44064ee44" alt='Go2'>
+</p>
+
+
 ## Project RoadMap:
 1. PPO balancing algorithm :white_check_mark: 
 2. Keyboard real time control :white_check_mark: 
@@ -49,7 +63,7 @@ Real-time RTX lidar stream:
 7. Foot force data stream :white_check_mark:
 8. Real-time control from ROS2
 9. Nav2 with Slam_toolbox
-10. Bunch of RL-envs for custom dog training
+10. Bunch of RL-envs for custom dog training :white_check_mark:
 
 ## Your feedback and support mean the world to us. 
 
@@ -104,6 +118,12 @@ You can control the dog using "WASD" keyboard commands
 ## ROS2 SDK
 
 You can use https://github.com/abizovnuralem/go2_ros2_sdk or https://github.com/unitreerobotics/unitree_ros2 as a basement for your ROS2 setup.
+
+
+## Select custom env
+
+To use predifined custom envs, you need to download files from https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing and place them to /envs folder.
+Then you can execute it via python main.py --custom_env=office or python main.py --custom_env=warehouse commands
 
 ## Easy start
 
