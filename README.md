@@ -63,7 +63,7 @@ Custom envs (Warehouse):
 7. Foot force data stream :white_check_mark:
 8. Real-time control from ROS2
 9. Nav2 with Slam_toolbox
-10. Bunch of RL-envs for custom dog training
+10. Bunch of RL-envs for custom dog training :white_check_mark:
 
 ## Your feedback and support mean the world to us. 
 
