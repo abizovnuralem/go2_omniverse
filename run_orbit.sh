@@ -2,8 +2,8 @@
 cd IsaacSim-ros_workspaces
 
 # Source the necessary ROS setup scripts
-source build_ws/foxy/foxy_ws/install/setup.bash
-source build_ws/foxy/isaac_sim_ros_ws/install/local_setup.bash
+source build_ws/${ROS_DISTRO}/${ROS_DISTRO}_ws/install/setup.bash
+source build_ws/${ROS_DISTRO}/isaac_sim_ros_ws/install/local_setup.bash
 
 # Changing directory back to the original location
 cd ..
