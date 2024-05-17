@@ -88,6 +88,17 @@ Also, you need to install ROS2 on your system and configure it:
 https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#isaac-sim-app-install-ros
 ```
 
+## Downloading the code
+
+To start with the local development environment, execute the following commands:
+
+```
+git clone https://github.com/abizovnuralem/go2_omniverse/ --recurse-submodules -j8 --depth=1
+git lfs install
+git lfs pull
+
+```
+
 ## Setup the Unitree L1 Lidar:
 
 First, you need to copy files from Isaac Sim folder to your local Isaac Sim installation in order to use Unitree L1 lidar inside Orbit.
