@@ -1,6 +1,0 @@
-<?xml version="1.0" ?>
-<launch>
-    <!-- Load controller parameters and launch the controller -->
-    <rosparam command="load" file="$(find cortex_control_franka)/config/controller.yaml"/>
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="joint_position_controller"/>
-</launch>

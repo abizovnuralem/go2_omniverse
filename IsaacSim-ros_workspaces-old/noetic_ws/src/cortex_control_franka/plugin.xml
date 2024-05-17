@@ -1,8 +1,0 @@
-<library path="lib/libcortex_control_franka">
-    <class name="cortex_control_franka/InterpolatedCommandStreamController" type="cortex::control::franka::InterpolatedCommandStreamController" base_class_type="controller_interface::ControllerBase">
-        <description>
-            Receives a stream of commands from a reactive motion generator, interpolates them, and
-            streams realtime position commands to Franka Panda's joint-space position controller.
-        </description>
-    </class>
-</library>
