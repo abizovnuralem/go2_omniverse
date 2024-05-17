@@ -1,0 +1,3 @@
+[submodule "IsaacSim-ros_workspaces"]
+	path = IsaacSim-ros_workspaces
+	url = https://github.com/NVIDIA-Omniverse/IsaacSim-ros_workspaces
