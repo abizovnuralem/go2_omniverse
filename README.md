@@ -75,12 +75,21 @@ Together, let's push the boundaries of what's possible with the Unitree Go2 and 
 
 
 ## System requirements
-You need to install Ubuntu 20.04, Nvidia Isaac Sim, Nvidia Orbit and Docker 
+You need to install:
+1. Ubuntu 22.04
+2. Nvidia Isaac Sim 2023.1.1
+3. Nvidia Orbit 0.3.0
 
-full instruction:
+Full instruction:
 ```
 https://isaac-orbit.github.io/orbit/source/setup/installation.html
 ```
+
+Some suggestions from me:
+1. You need to check nvidia-smi, it should work, before install Isaac Sim
+2. You need to install Miniconda and execute: conda config --set auto_activate_base false
+3. Install Omniverse launcher and then install Isaac Sim.
+4. Create conda env then activate it, also execute ./orbit.sh --install and ./orbit.sh --extra and ./orbit.sh --extra rsl_rl
 
 Also, you need to install ROS2 on your system and configure it:
 
