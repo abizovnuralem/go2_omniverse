@@ -142,6 +142,17 @@ For you convenience I wrote two launche files: run_orbit.sh and build_and_run_or
 
 To contribute or modify the project, refer to these resources for implementing additional features or improving the existing codebase. PRs are welcome!
 
+## VR support
+
+To enable VR support on linux will take some time, but it works!
+I have tested it on:
+1. Ubuntu 22.04
+2. Nvidia drivers are 545.29.06 
+3. SteamVR 2.4.4 (IMPORTANT! It should be 2.4.4) and you need to go to Compatibility tab (Inside Steam app) and "Force the use of a specific Steam Play compatibility tool" and switch to "Steam-Play-None", additional info you can find in ALVR github issues tab.
+4. ALVR streamer 20.8.1 + Oculus Quest 2 (client ALVR you can install via SideQuest app) (How to install it: https://github.com/alvr-org/ALVR)
+5. Execute IsaacSim, Go to Window -> Extensions, find STEAMVR INPUT/OUTPUT then enable it and enable AutoLoad. Reopen IsaacSim.
+6. Enjoy Omniverse in VR mode!
+
 ## Thanks
 Special thanks to Leul Tesfaye for his expertise in Orbit lidars
 
