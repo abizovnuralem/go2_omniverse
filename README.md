@@ -150,7 +150,7 @@ I have tested it on:
 2. Nvidia drivers are 545.29.06 
 3. SteamVR 2.4.4 (IMPORTANT! It should be 2.4.4) and you need to go to Compatibility tab (Inside Steam app) and "Force the use of a specific Steam Play compatibility tool" and switch to "Steam-Play-None", additional info you can find in ALVR github issues tab.
 4. ALVR streamer 20.8.1 + Oculus Quest 2 (client ALVR you can install via SideQuest app) (How to install it: https://github.com/alvr-org/ALVR)
-5. Execute IsaacSim, Go to Window -> Extensions, find STEAMVR INPUT/OUTPUT then enable it and enable AutoLoad. Reopen IsaacSim.
+5. Execute IsaacSim, Go to Window -> Extensions, find STEAMVR INPUT/OUTPUT then enable it and enable AutoLoad. Reopen IsaacSim. Use OpenXR mode.
 6. Enjoy Omniverse in VR mode!
 
 ## Thanks
