@@ -61,9 +61,10 @@ Custom envs (Warehouse):
 5. IMU data stream to ROS2 :white_check_mark: 
 6. URDF real-time joints sync :white_check_mark:
 7. Foot force data stream :white_check_mark:
-8. Real-time control from ROS2
-9. Nav2 with Slam_toolbox
+8. Real-time control from ROS2 :white_check_mark:
+9. Nav2 with Slam_toolbox :white_check_mark:
 10. Bunch of RL-envs for custom dog training :white_check_mark:
+11. Custom numbers of robots
 
 ## Your feedback and support mean the world to us. 
 
@@ -75,12 +76,22 @@ Together, let's push the boundaries of what's possible with the Unitree Go2 and 
 
 
 ## System requirements
-You need to install Ubuntu 20.04, Nvidia Isaac Sim, Nvidia Orbit and Docker 
+You need to install:
+1. Ubuntu 22.04
+2. Nvidia Isaac Sim 2023.1.1
+3. Nvidia Orbit 0.3.0
+4. Ros2 Humble
 
-full instruction:
+Full instruction:
 ```
 https://isaac-orbit.github.io/orbit/source/setup/installation.html
 ```
+
+Some suggestions from me:
+1. You need to check nvidia-smi, it should work, before installing Isaac Sim
+2. You need to install Miniconda and execute: conda config --set auto_activate_base false
+3. Install Omniverse launcher and then install Isaac Sim.
+4. Create conda env then activate it, also execute ./orbit.sh --install and ./orbit.sh --extra and ./orbit.sh --extra rsl_rl
 
 Also, you need to install ROS2 on your system and configure it:
 
@@ -90,12 +101,10 @@ https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#
 
 ## Downloading the code
 
-To start with the local development environment, execute the following commands:
+To start with the local development environment, clone this repo:
 
 ```
 git clone https://github.com/abizovnuralem/go2_omniverse/ --recurse-submodules -j8 --depth=1
-git lfs install
-git lfs pull
 
 ```
 
@@ -110,18 +119,11 @@ with Isaac_sim/extension.toml
 ```
 
 ## Usage
-The current project was tested on Ubuntu 20.04 (foxy ros2 bridge), IsaacSim 2023.1.1 with Orbit 0.2.0 and Nvidia Driver Version: 535.171.04 with CUDA Version: 12.2.
-Go inside the repo folder, first, you need to build ros2 env for your Nvidia orbit:
-
+The current project was tested on Ubuntu 22.04, IsaacSim 2023.1.1 with Orbit 0.3.0 and Nvidia Driver Version: 545.
+To start the project, execute:
 
 ```
-1. go inside IsaacSim-ros_workspaces folder
-2. execute ./build_foxy.sh or ./build_humble.sh (not tested)
-3. source build_ws/foxy/foxy_ws/install/setup.bash or humble (not tested)
-4. source build_ws/foxy/isaac_sim_ros_ws/install/local_setup.bash or humble (not tested))
-5. go back to the root folder
-6. conda activate orbit
-7. python main.py
+./run_sim.sh
 ```
 
 You can control the dog using "WASD" keyboard commands
@@ -134,18 +136,26 @@ You can use https://github.com/abizovnuralem/go2_ros2_sdk or https://github.com/
 ## Select custom env
 
 To use predifined custom envs, you need to download files from https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing and place them to /envs folder.
-Then you can execute it via python main.py --custom_env=office or python main.py --custom_env=warehouse commands
+Then you can execute it via python main.py --custom_env=office or python main.py --custom_env=warehouse commands (The whole cmd you can read from run_sim script). If you are doing it first time, it will take 2-3 minutes to configure the env. Please, wait.
 
-## Easy start
-
-For you convenience I wrote two launche files: run_orbit.sh and build_and_run_orbit.sh
 
 ## Development
 
 To contribute or modify the project, refer to these resources for implementing additional features or improving the existing codebase. PRs are welcome!
 
 ## Thanks
-Special thanks to Leul Tesfaye for his expertise in Orbit lidars
+Special thanks to Leul Tesfaye for his expertise in Orbit lidars and Tamas @tfoldi for his contribution to this project.
+
+## VR support
+
+To enable VR support on linux will take some time, but it works!
+I have tested it on:
+1. Ubuntu 22.04
+2. Nvidia drivers are 545.29.06 
+3. SteamVR 2.4.4 (IMPORTANT! It should be 2.4.4) and you need to go to Compatibility tab (Inside Steam app) and "Force the use of a specific Steam Play compatibility tool" and switch to "Steam-Play-None", additional info you can find in ALVR github issues tab.
+4. ALVR streamer 20.8.1 + Oculus Quest 2 (client ALVR you can install via SideQuest app) (How to install it: https://github.com/alvr-org/ALVR)
+5. Execute IsaacSim, Go to Window -> Extensions, find STEAMVR INPUT/OUTPUT then enable it and enable AutoLoad. Reopen IsaacSim. Use OpenXR mode.
+6. Enjoy Omniverse in VR mode!
 
 ## License
 

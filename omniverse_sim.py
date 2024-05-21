@@ -45,6 +45,14 @@ import omni
 ext_manager = omni.kit.app.get_app().get_extension_manager()
 ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
 
+# FOR VR SUPPORT
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.core-105.1.0-192", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.steamvr-105.1.0-192", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.simulatedxr-105.1.0-192", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.openxr-105.1.0-192", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.telemetry-105.1.0-192", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.profile.vr-105.1.0-192", True)
+
 
 """Rest everything follows."""
 import gymnasium as gym
