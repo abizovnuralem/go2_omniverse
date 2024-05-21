@@ -22,8 +22,21 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-from omniverse_sim import run_sim
+source /opt/ros/${ROS_DISTRO}/setup.bash
+cd IsaacSim-ros_workspaces/${ROS_DISTRO}_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build
+source install/setup.bash
+cd ../..
+cd go2_omniverse_ws
+rosdep install --from-paths src --ignore-src -r -y
+colcon build
+source install/setup.bash
+cd ..
 
+eval "$(conda shell.bash hook)"
+conda activate orbit
+export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
-if __name__ == "__main__":
-    run_sim()
+# Run the Python script
+python main.py
