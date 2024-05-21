@@ -117,6 +117,8 @@ First, you need to copy files from Isaac Sim folder to your local Isaac Sim inst
 1. You need to replace original file that located in ~/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.isaac.sensor/config/extrensiom.toml 
 with Isaac_sim/extension.toml
 2. You need to add Unitree folder that is inside Isaac_sim folder to  ~/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.isaac.sensor/data/lidar_configs/
+3. You need to go inside Orbit project folder and then mkdir -p /source/exts/omni.isaac.sensor/data/lidar_configs/Unitree/
+4. Put Unitree_L1.json inside orbit/source/exts/omni.isaac.sensor/data/lidar_configs/Unitree/
 ```
 
 ## Usage
