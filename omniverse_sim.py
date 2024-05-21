@@ -85,34 +85,38 @@ import custom_rl_env
 
 
 def sub_keyboard_event(event, *args, **kwargs) -> bool:
-    if event.type == carb.input.KeyboardEventType.KEY_PRESS:
-        if event.input.name == 'W':
-            custom_rl_env.base_command[0] = [1, 0, 0]
-        if event.input.name == 'S':
-            custom_rl_env.base_command[0] = [-1, 0, 0]
-        if event.input.name == 'A':
-            custom_rl_env.base_command[0] = [0, 1, 0]
-        if event.input.name == 'D':
-            custom_rl_env.base_command[0] = [0, -1, 0]
-        if event.input.name == 'Q':
-            custom_rl_env.base_command[0] = [0, 0, 1]
-        if event.input.name == 'E':
-            custom_rl_env.base_command[0] = [0, 0, -1]
-        
-        if event.input.name == 'I':
-            custom_rl_env.base_command[1] = [1, 0, 0]
-        if event.input.name == 'K':
-            custom_rl_env.base_command[1] = [-1, 0, 0]
-        if event.input.name == 'J':
-            custom_rl_env.base_command[1] = [0, 1, 0]
-        if event.input.name == 'L':
-            custom_rl_env.base_command[1] = [0, -1, 0]
-        if event.input.name == 'U':
-            custom_rl_env.base_command[1] = [0, 0, 1]
-        if event.input.name == 'O':
-            custom_rl_env.base_command[1] = [0, 0, -1]
-    elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
-        custom_rl_env.base_command[0] = [0, 0, 0]
+
+    if len(custom_rl_env.base_command) > 0:
+        if event.type == carb.input.KeyboardEventType.KEY_PRESS:
+            if event.input.name == 'W':
+                custom_rl_env.base_command[0] = [1, 0, 0]
+            if event.input.name == 'S':
+                custom_rl_env.base_command[0] = [-1, 0, 0]
+            if event.input.name == 'A':
+                custom_rl_env.base_command[0] = [0, 1, 0]
+            if event.input.name == 'D':
+                custom_rl_env.base_command[0] = [0, -1, 0]
+            if event.input.name == 'Q':
+                custom_rl_env.base_command[0] = [0, 0, 1]
+            if event.input.name == 'E':
+                custom_rl_env.base_command[0] = [0, 0, -1]
+
+            if len(custom_rl_env.base_command) > 1:
+                if event.input.name == 'I':
+                    custom_rl_env.base_command[1] = [1, 0, 0]
+                if event.input.name == 'K':
+                    custom_rl_env.base_command[1] = [-1, 0, 0]
+                if event.input.name == 'J':
+                    custom_rl_env.base_command[1] = [0, 1, 0]
+                if event.input.name == 'L':
+                    custom_rl_env.base_command[1] = [0, -1, 0]
+                if event.input.name == 'U':
+                    custom_rl_env.base_command[1] = [0, 0, 1]
+                if event.input.name == 'O':
+                    custom_rl_env.base_command[1] = [0, 0, -1]
+        elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
+            for i in range(len(custom_rl_env.base_command)):
+                custom_rl_env.base_command[i] = [0, 0, 0]
     return True
 
 
