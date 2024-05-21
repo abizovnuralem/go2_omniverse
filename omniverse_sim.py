@@ -189,6 +189,10 @@ def run_sim():
                                          orientation=(1.0, 0.0, 0.0, 0.0),
                                          config_file_name= "Unitree_L1",
                                          )
+    
+    print("!!!!!!!!!!!!!!!!!")
+    print(lidar_sensor)
+
     cameraCfg = CameraCfg(
         prim_path="/World/envs/env_0/Robot/base/front_cam",
         update_period=0.1,
@@ -202,8 +206,8 @@ def run_sim():
     )
     Camera(cameraCfg)
     # Create the debug draw pipeline in the post process graph
-    # writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
-    # writer.attach([lidar_sensor.get_render_product_path()])
+    writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
+    writer.attach([lidar_sensor.get_render_product_path()])
 
     annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
     annotator.attach(lidar_sensor.get_render_product_path())
