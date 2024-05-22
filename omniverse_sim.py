@@ -153,7 +153,7 @@ def cmd_vel_cb(msg, num_robot):
 def add_cmd_sub(num_envs):
     node_test = rclpy.create_node('position_velocity_publisher')
     for i in range(num_envs):
-        node_test.create_subscription(Twist, f'robot{i}cmd_vel', lambda msg: cmd_vel_cb(msg, i), 10)
+        node_test.create_subscription(Twist, f'robot{i}/cmd_vel', lambda msg: cmd_vel_cb(msg, i), 10)
     # Spin in a separate thread
     thread = threading.Thread(target=rclpy.spin, args=(node_test, ), daemon=True)
     thread.start()
@@ -210,8 +210,8 @@ def pub_robo_data_ros2(num_envs, base_node, env, annotator, start_time):
                 for j in range(num_envs):
                     data = annotator.get_data()
                     point_cloud = update_meshes_for_cloud2(
-                        data['data'], env.env.scene["robot"].data.root_state_w[j, :3], 
-                        env.env.scene["robot"].data.root_state_w[j, 3:7]
+                        data['data'], env.env.scene["robot"].data.root_state_w[i, :3], 
+                        env.env.scene["robot"].data.root_state_w[i, 3:7]
                         )
                     base_node.publish_lidar(point_cloud, i)
                 start_time = time.time()
