@@ -83,6 +83,8 @@ from agent_cfg import unitree_go2_agent_cfg
 from custom_rl_env import UnitreeGo2CustomEnvCfg
 import custom_rl_env
 
+from omnigraph import create_front_cam_omnigraph
+
 
 def sub_keyboard_event(event, *args, **kwargs) -> bool:
 
@@ -177,7 +179,6 @@ def add_rtx_lidar(num_envs, debug=False):
 
 
 def add_camera(num_envs):
-
     for i in range(num_envs):
         cameraCfg = CameraCfg(
             prim_path=f"/World/envs/env_{i}/Robot/base/front_cam",
@@ -243,6 +244,10 @@ def run_sim():
     env_cfg = UnitreeGo2CustomEnvCfg()
     env_cfg.scene.num_envs = 2
 
+    #create ros2 camera stream omnigraph
+    for i in range(env_cfg.scene.num_envs):
+        create_front_cam_omnigraph(i)
+        
     specify_cmd_for_robots(env_cfg.scene.num_envs)
 
     agent_cfg: RslRlOnPolicyRunnerCfg = unitree_go2_agent_cfg

@@ -49,9 +49,6 @@ from omni.isaac.orbit.utils.noise import AdditiveUniformNoiseCfg as Unoise
 import omni.isaac.orbit_tasks.locomotion.velocity.mdp as mdp
 
 
-from omnigraph import create_front_cam_omnigraph
-
-
 base_command = []
 
 
@@ -302,6 +299,3 @@ class UnitreeGo2CustomEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         # terminations
         self.terminations.base_contact.params["sensor_cfg"].body_names = "base"
-
-        #create ros2 camera stream omnigraph
-        create_front_cam_omnigraph()
