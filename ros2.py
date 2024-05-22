@@ -68,7 +68,6 @@ class RobotBaseNode(Node):
             joint_state_lst[6].item(), joint_state_lst[7].item(), joint_state_lst[8].item(),
             joint_state_lst[9].item(), joint_state_lst[10].item(), joint_state_lst[11].item(),
             ]
-        print(joint_state)
         self.joint_pub[robot_num].publish(joint_state)
 
     def publish_odom(self, base_pos, base_rot, robot_num):

@@ -162,12 +162,14 @@ def add_cmd_sub(num_envs):
 
 
 def add_rtx_lidar(num_envs, debug=False):
+    annotator_lst = []
     for i in range(num_envs):
         lidar_sensor = LidarRtx(f'/World/envs/env_{i}/Robot/base/lidar_sensor',
                                             translation=(0.28945, 0, -0.046825),
                                             orientation=(1.0, 0.0, 0.0, 0.0),
                                             config_file_name= "Unitree_L1",
                                             )
+        
         if debug:
             # Create the debug draw pipeline in the post process graph
             writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
@@ -175,7 +177,8 @@ def add_rtx_lidar(num_envs, debug=False):
 
         annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
         annotator.attach(lidar_sensor.get_render_product_path())
-    return annotator
+        annotator_lst.append(annotator)
+    return annotator_lst
 
 
 def add_camera(num_envs):
@@ -194,7 +197,8 @@ def add_camera(num_envs):
         Camera(cameraCfg)
 
 
-def pub_robo_data_ros2(num_envs, base_node, env, annotator, start_time):
+def pub_robo_data_ros2(num_envs, base_node, env, annotator_lst, start_time):
+
     for i in range(num_envs):
         # publish ros2 info
         base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[i], i)
@@ -209,12 +213,12 @@ def pub_robo_data_ros2(num_envs, base_node, env, annotator, start_time):
         try:
             if (time.time() - start_time) > 1/20:
                 for j in range(num_envs):
-                    data = annotator.get_data()
+                    data = annotator_lst[j].get_data()
                     point_cloud = update_meshes_for_cloud2(
-                        data['data'], env.env.scene["robot"].data.root_state_w[i, :3], 
-                        env.env.scene["robot"].data.root_state_w[i, 3:7]
+                        data['data'], env.env.scene["robot"].data.root_state_w[j, :3], 
+                        env.env.scene["robot"].data.root_state_w[j, 3:7]
                         )
-                    base_node.publish_lidar(point_cloud, i)
+                    base_node.publish_lidar(point_cloud, j)
                 start_time = time.time()
         except :
             pass
@@ -280,7 +284,7 @@ def run_sim():
     base_node = RobotBaseNode(env_cfg.scene.num_envs)
     add_cmd_sub(env_cfg.scene.num_envs)
 
-    annotator = add_rtx_lidar(env_cfg.scene.num_envs, True)
+    annotator_lst = add_rtx_lidar(env_cfg.scene.num_envs, False)
     add_camera(env_cfg.scene.num_envs)
     setup_custom_env()
     
@@ -293,5 +297,5 @@ def run_sim():
             actions = policy(obs)
             # env stepping
             obs, _, _, _ = env.step(actions)
-            pub_robo_data_ros2(env_cfg.scene.num_envs, base_node, env, annotator, start_time)
+            pub_robo_data_ros2(env_cfg.scene.num_envs, base_node, env, annotator_lst, start_time)
     env.close()
