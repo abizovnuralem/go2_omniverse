@@ -246,7 +246,7 @@ def run_sim():
     # parse configuration
     
     env_cfg = UnitreeGo2CustomEnvCfg()
-    env_cfg.scene.num_envs = 2
+    env_cfg.scene.num_envs = 1
 
     #create ros2 camera stream omnigraph
     for i in range(env_cfg.scene.num_envs):
