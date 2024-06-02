@@ -4,7 +4,7 @@ from __future__ import annotations
 
 """Launch Isaac Sim Simulator first."""
 import argparse
-from omni.isaac.orbit.app import AppLauncher
+from omni.isaac.lab.app import AppLauncher
 
 
 import cli_args  
@@ -46,12 +46,12 @@ ext_manager = omni.kit.app.get_app().get_extension_manager()
 ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
 
 # FOR VR SUPPORT
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.core-105.1.0-192", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.steamvr-105.1.0-192", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.simulatedxr-105.1.0-192", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.openxr-105.1.0-192", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.telemetry-105.1.0-192", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.profile.vr-105.1.0-192", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.core", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.steamvr", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.simulatedxr", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.openxr", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.telemetry", True)
+ext_manager.set_extension_enabled_immediate("omni.kit.xr.profile.vr", True)
 
 
 """Rest everything follows."""
@@ -60,13 +60,13 @@ import torch
 import carb
 
 
-from omni.isaac.orbit_tasks.utils import get_checkpoint_path
-from omni.isaac.orbit_tasks.utils.wrappers.rsl_rl import (
+from omni.isaac.lab_tasks.utils import get_checkpoint_path
+from omni.isaac.lab_tasks.utils.wrappers.rsl_rl import (
     RslRlOnPolicyRunnerCfg,
     RslRlVecEnvWrapper
 )
-import omni.isaac.orbit.sim as sim_utils
-from omni.isaac.orbit.sensors import CameraCfg, Camera
+import omni.isaac.lab.sim as sim_utils
+from omni.isaac.lab.sensors import CameraCfg, Camera
 from omni.isaac.sensor import LidarRtx
 import omni.replicator.core as rep
 import omni.appwindow
