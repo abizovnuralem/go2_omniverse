@@ -1,6 +1,6 @@
 # Welcome to the Unitree Go2 Omniverse Project!
 
-I am thrilled to announce that the Unitree Go2 robot has now been integrated with the Nvidia Isaac Sim (Orbit), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
+I am thrilled to announce that the Unitree Go2 robot has now been integrated with the Nvidia Isaac Sim 4.0 (Isaac Lab), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
 
 Get ready to take your research to the next level with this powerful new resource at your fingertips!
 
@@ -71,7 +71,7 @@ VR support:
 8. Real-time control from ROS2 :white_check_mark:
 9. Nav2 with Slam_toolbox :white_check_mark:
 10. Bunch of RL-envs for custom dog training :white_check_mark:
-11. Custom numbers of robots
+11. Custom numbers of robots :white_check_mark:
 
 ## Your feedback and support mean the world to us. 
 
@@ -85,22 +85,21 @@ Together, let's push the boundaries of what's possible with the Unitree Go2 and 
 ## System requirements
 You need to install:
 1. Ubuntu 22.04
-2. Nvidia Isaac Sim 2023.1.1
-3. Nvidia Orbit 0.3.0
+2. Nvidia Isaac Sim 4.0
+3. Nvidia Isaac Lab
 4. Ros2 Humble
 
 
 Full instruction:
 ```
-https://isaac-orbit.github.io/orbit/source/setup/installation.html
+https://isaac-sim.github.io/IsaacLab/source/setup/installation/binaries_installation.html
 ```
 
 Some suggestions from me:
-1. You need to check nvidia-smi, it should work, before installing Isaac Sim
+1. You need to check nvidia-smi, it should work, before installing Isaac Sim 4.0
 2. You need to install Miniconda and execute: conda config --set auto_activate_base false
-3. Install Omniverse launcher and then install Isaac Sim.
-4. Create conda env then activate it, also execute ./orbit.sh --install and ./orbit.sh --extra and ./orbit.sh --extra rsl_rl
-
+3. Install Omniverse launcher and then install Isaac Sim 4.0.
+4. Create conda env then activate it, also execute ./isaaclab.sh --install 
 Also, you need to install ROS2 on your system and configure it:
 
 ```
@@ -121,15 +120,13 @@ git clone https://github.com/abizovnuralem/go2_omniverse/ --recurse-submodules -
 First, you need to copy files from Isaac Sim folder to your local Isaac Sim installation in order to use Unitree L1 lidar inside Orbit.
 
 ```
-1. You need to replace original file that located in ~/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.isaac.sensor/config/extrensiom.toml 
-with Isaac_sim/extension.toml
-2. You need to add Unitree folder that is inside Isaac_sim folder to  ~/.local/share/ov/pkg/isaac_sim-2023.1.1/exts/omni.isaac.sensor/data/lidar_configs/
-3. You need to go inside Orbit project folder and then mkdir -p /source/exts/omni.isaac.sensor/data/lidar_configs/Unitree/
-4. Put Unitree_L1.json inside orbit/source/exts/omni.isaac.sensor/data/lidar_configs/Unitree/
+1. You need to replace original file that located in ~/.local/share/ov/pkg/isaac-sim-4.0.0/exts/omni.isaac.sensor/config/extrensiom.toml 
+with Isaac_sim/extension.toml in this repo.
+2. You need to add Unitree_L1.json to IsaacLab repo folder, where IsaacLab/source/exts/omni.isaac.sensor/data/lidar_configs/Unitree/Unitree_L1.json will be the final path (If it doesnt exists, create it)
 ```
 
 ## Usage
-The current project was tested on Ubuntu 22.04, IsaacSim 2023.1.1 with Orbit 0.3.0 and Nvidia Driver Version: 545.
+The current project was tested on Ubuntu 22.04, IsaacSim 4.0 with Isaac Lab and Nvidia Driver Version: 545.
 To start the project, execute:
 
 ```
@@ -167,16 +164,6 @@ I have tested it on:
 ## Thanks
 Special thanks to Leul Tesfaye for his expertise in Orbit lidars and Tamas @tfoldi for his contribution to this project.
 
-## VR support
-
-To enable VR support on linux will take some time, but it works!
-I have tested it on:
-1. Ubuntu 22.04
-2. Nvidia drivers are 545.29.06 
-3. SteamVR 2.4.4 (IMPORTANT! It should be 2.4.4) and you need to go to Compatibility tab (Inside Steam app) and "Force the use of a specific Steam Play compatibility tool" and switch to "Steam-Play-None", additional info you can find in ALVR github issues tab.
-4. ALVR streamer 20.8.1 + Oculus Quest 2 (client ALVR you can install via SideQuest app) (How to install it: https://github.com/alvr-org/ALVR)
-5. Execute IsaacSim, Go to Window -> Extensions, find STEAMVR INPUT/OUTPUT then enable it and enable AutoLoad. Reopen IsaacSim. Use OpenXR mode.
-6. Enjoy Omniverse in VR mode!
 
 ## License
 
