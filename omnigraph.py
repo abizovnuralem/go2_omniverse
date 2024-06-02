@@ -26,12 +26,12 @@ import omni
 import omni.graph.core as og
 
 
-def create_front_cam_omnigraph():
+def create_front_cam_omnigraph(robot_num):
     """Define the OmniGraph for the Isaac Sim environment."""
 
     keys = og.Controller.Keys
 
-    graph_path = "/ROS_" + "front_cam"
+    graph_path = f"/ROS_" + f"front_cam{robot_num}"
     og.Controller.edit(
         {
             "graph_path": graph_path,
@@ -46,13 +46,13 @@ def create_front_cam_omnigraph():
             ],
 
             keys.SET_VALUES: [
-                    ("IsaacCreateRenderProduct.inputs:cameraPrim", "/World/envs/env_0/Robot/base/front_cam"),
-                    ("IsaacCreateRenderProduct.inputs:enabled", True),
-                    ("ROS2CameraHelper.inputs:type", "rgb"),
-                    ("ROS2CameraHelper.inputs:topicName", "unitree_go2/front_cam/rgb"),
-                    ("ROS2CameraHelper.inputs:frameId", "unitree_go2"),
-                ],
-            
+                ("IsaacCreateRenderProduct.inputs:cameraPrim", f"/World/envs/env_{robot_num}/Robot/base/front_cam"),
+                ("IsaacCreateRenderProduct.inputs:enabled", True),
+                ("ROS2CameraHelper.inputs:type", "rgb"),
+                ("ROS2CameraHelper.inputs:topicName", f"robot{robot_num}/front_cam/rgb"),
+                ("ROS2CameraHelper.inputs:frameId", f"robot{robot_num}"),
+            ],
+
             keys.CONNECT: [
                 ("OnPlaybackTick.outputs:tick", "IsaacCreateRenderProduct.inputs:execIn"),
                 ("IsaacCreateRenderProduct.outputs:execOut", "ROS2CameraHelper.inputs:execIn"),

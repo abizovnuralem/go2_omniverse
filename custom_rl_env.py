@@ -49,16 +49,16 @@ from omni.isaac.orbit.utils.noise import AdditiveUniformNoiseCfg as Unoise
 import omni.isaac.orbit_tasks.locomotion.velocity.mdp as mdp
 
 
-from omnigraph import create_front_cam_omnigraph
-
-
-base_command = [0, 0, 0]
+base_command = []
 
 
 def constant_commands(env: RLTaskEnvCfg) -> torch.Tensor:
     global base_command
     """The generated command from the command generator."""
-    return torch.tensor([base_command], device=env.device).repeat(env.num_envs, 1)
+    tensor_lst = torch.tensor([0, 0, 0], device=env.device).repeat(env.num_envs, 1)
+    for i in range(env.num_envs):
+        tensor_lst[i] = torch.tensor(base_command[i], device=env.device)
+    return tensor_lst
 
 
 @configclass
@@ -299,6 +299,3 @@ class UnitreeGo2CustomEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         # terminations
         self.terminations.base_contact.params["sensor_cfg"].body_names = "base"
-
-        #create ros2 camera stream omnigraph
-        create_front_cam_omnigraph()
