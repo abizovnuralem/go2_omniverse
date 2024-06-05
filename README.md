@@ -1,6 +1,6 @@
-# Welcome to the Unitree Go2 Omniverse Project!
+# Welcome to the Unitree Go2/G1 Omniverse Project!
 
-I am thrilled to announce that the Unitree Go2 robot has now been integrated with the Nvidia Isaac Sim 4.0 (Isaac Lab), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
+I am thrilled to announce that the Unitree Go2/G1 robot has now been integrated with the Nvidia Isaac Sim 4.0 (Isaac Lab), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
 
 Get ready to take your research to the next level with this powerful new resource at your fingertips!
 
@@ -87,7 +87,7 @@ If you're as enthusiastic about this project as we are, please consider giving i
 
 Your encouragement fuels our passion and helps us develop our RoadMap further. We welcome any help or suggestions you can offer!
 
-Together, let's push the boundaries of what's possible with the Unitree Go2 and ROS2!
+Together, let's push the boundaries of what's possible with the Unitree Go2/G1 and ROS2!
 
 
 ## System requirements
