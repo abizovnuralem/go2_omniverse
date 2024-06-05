@@ -23,6 +23,8 @@ parser.add_argument("--num_envs", type=int, default=1, help="Number of environme
 parser.add_argument("--task", type=str, default="Isaac-Velocity-Rough-Unitree-Go2-v0", help="Name of the task.")
 parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
 parser.add_argument("--custom_env", type=str, default="office", help="Setup the environment")
+parser.add_argument("--robot", type=str, default="go2", help="Setup the robot")
+parser.add_argument("--robot_amount", type=int, default=1, help="Setup the robot amount")
 
 
 # append RSL-RL cli arguments
@@ -66,21 +68,18 @@ from omni.isaac.lab_tasks.utils.wrappers.rsl_rl import (
     RslRlVecEnvWrapper
 )
 import omni.isaac.lab.sim as sim_utils
-from omni.isaac.lab.sensors import CameraCfg, Camera
-from omni.isaac.sensor import LidarRtx
-import omni.replicator.core as rep
 import omni.appwindow
 from rsl_rl.runners import OnPolicyRunner
-from scipy.spatial.transform import Rotation
+
 
 
 import rclpy
-from ros2 import RobotBaseNode
+from ros2 import RobotBaseNode, add_camera, add_rtx_lidar, pub_robo_data_ros2
 from geometry_msgs.msg import Twist
 
 
-from agent_cfg import unitree_go2_agent_cfg
-from custom_rl_env import UnitreeGo2CustomEnvCfg
+from agent_cfg import unitree_go2_agent_cfg, unitree_g1_agent_cfg
+from custom_rl_env import UnitreeGo2CustomEnvCfg, G1RoughEnvCfg
 import custom_rl_env
 
 from omnigraph import create_front_cam_omnigraph
@@ -122,15 +121,6 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
     return True
 
 
-def update_meshes_for_cloud2(position_array, origin, rot):
-    q = rot.cpu().numpy()
-    rotation = Rotation.from_quat([q[1], q[2], q[3], q[0]])
-    rotated_vectors = rotation.apply(position_array)
-    # Recalculate origin
-    rotated_vectors += origin.cpu().numpy()
-    return rotated_vectors
-
-
 def setup_custom_env():
     try:
         if (args_cli.custom_env == "warehouse"):
@@ -161,69 +151,6 @@ def add_cmd_sub(num_envs):
     thread.start()
 
 
-def add_rtx_lidar(num_envs, debug=False):
-    annotator_lst = []
-    for i in range(num_envs):
-        lidar_sensor = LidarRtx(f'/World/envs/env_{i}/Robot/base/lidar_sensor',
-                                            translation=(0.28945, 0, -0.046825),
-                                            orientation=(1.0, 0.0, 0.0, 0.0),
-                                            config_file_name= "Unitree_L1",
-                                            )
-        
-        if debug:
-            # Create the debug draw pipeline in the post process graph
-            writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
-            writer.attach([lidar_sensor.get_render_product_path()])
-
-        annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
-        annotator.attach(lidar_sensor.get_render_product_path())
-        annotator_lst.append(annotator)
-    return annotator_lst
-
-
-def add_camera(num_envs):
-    for i in range(num_envs):
-        cameraCfg = CameraCfg(
-            prim_path=f"/World/envs/env_{i}/Robot/base/front_cam",
-            update_period=0.1,
-            height=480,
-            width=640,
-            data_types=["rgb"],
-            spawn=sim_utils.PinholeCameraCfg(
-                focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
-            ),
-            offset=CameraCfg.OffsetCfg(pos=(0.32487, -0.00095, 0.05362), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
-        )
-        Camera(cameraCfg)
-
-
-def pub_robo_data_ros2(num_envs, base_node, env, annotator_lst, start_time):
-
-    for i in range(num_envs):
-        # publish ros2 info
-        base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[i], i)
-        base_node.publish_odom(env.env.scene["robot"].data.root_state_w[i, :3], env.env.scene["robot"].data.root_state_w[i, 3:7], i)
-        base_node.publish_robot_state([
-            env.env.scene["contact_forces"].data.net_forces_w[i][4][2], 
-            env.env.scene["contact_forces"].data.net_forces_w[i][8][2], 
-            env.env.scene["contact_forces"].data.net_forces_w[i][14][2], 
-            env.env.scene["contact_forces"].data.net_forces_w[i][18][2]
-            ], i)
-
-        try:
-            if (time.time() - start_time) > 1/20:
-                for j in range(num_envs):
-                    data = annotator_lst[j].get_data()
-                    point_cloud = update_meshes_for_cloud2(
-                        data['data'], env.env.scene["robot"].data.root_state_w[j, :3], 
-                        env.env.scene["robot"].data.root_state_w[j, 3:7]
-                        )
-                    base_node.publish_lidar(point_cloud, j)
-                start_time = time.time()
-        except :
-            pass
-
-
 
 def specify_cmd_for_robots(numv_envs):
     base_cmd = []
@@ -231,8 +158,6 @@ def specify_cmd_for_robots(numv_envs):
         base_cmd.append([0, 0, 0])
     custom_rl_env.base_command = base_cmd
     
-
-
 
 def run_sim():
     
@@ -246,15 +171,23 @@ def run_sim():
     # parse configuration
     
     env_cfg = UnitreeGo2CustomEnvCfg()
-    env_cfg.scene.num_envs = 1
+    
+    if args_cli.robot == "g1":
+        env_cfg = G1RoughEnvCfg()
 
-    #create ros2 camera stream omnigraph
+    # add N robots to env 
+    env_cfg.scene.num_envs = args_cli.robot_amount
+
+    # create ros2 camera stream omnigraph
     for i in range(env_cfg.scene.num_envs):
         create_front_cam_omnigraph(i)
         
     specify_cmd_for_robots(env_cfg.scene.num_envs)
 
     agent_cfg: RslRlOnPolicyRunnerCfg = unitree_go2_agent_cfg
+
+    if args_cli.robot == "g1":
+        agent_cfg: RslRlOnPolicyRunnerCfg = unitree_g1_agent_cfg
 
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg)
@@ -284,8 +217,8 @@ def run_sim():
     base_node = RobotBaseNode(env_cfg.scene.num_envs)
     add_cmd_sub(env_cfg.scene.num_envs)
 
-    annotator_lst = add_rtx_lidar(env_cfg.scene.num_envs, False)
-    add_camera(env_cfg.scene.num_envs)
+    annotator_lst = add_rtx_lidar(env_cfg.scene.num_envs, args_cli.robot, True)
+    add_camera(env_cfg.scene.num_envs, args_cli.robot)
     setup_custom_env()
     
     start_time = time.time()
@@ -297,5 +230,5 @@ def run_sim():
             actions = policy(obs)
             # env stepping
             obs, _, _, _ = env.step(actions)
-            pub_robo_data_ros2(env_cfg.scene.num_envs, base_node, env, annotator_lst, start_time)
+            pub_robo_data_ros2(args_cli.robot, env_cfg.scene.num_envs, base_node, env, annotator_lst, start_time)
     env.close()

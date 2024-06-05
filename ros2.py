@@ -22,6 +22,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import asyncio
+import time
 
 
 from rclpy.node import Node
@@ -33,6 +34,103 @@ from go2_interfaces.msg import Go2State
 from std_msgs.msg import Header
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
+
+
+
+from omni.isaac.lab.sensors import CameraCfg, Camera
+from omni.isaac.sensor import LidarRtx
+import omni.replicator.core as rep
+from scipy.spatial.transform import Rotation
+import omni.isaac.lab.sim as sim_utils
+
+
+
+def update_meshes_for_cloud2(position_array, origin, rot):
+    q = rot.cpu().numpy()
+    rotation = Rotation.from_quat([q[1], q[2], q[3], q[0]])
+    rotated_vectors = rotation.apply(position_array)
+    # Recalculate origin
+    rotated_vectors += origin.cpu().numpy()
+    return rotated_vectors
+
+
+def add_rtx_lidar(num_envs, robot_type, debug=False):
+    annotator_lst = []
+    for i in range(num_envs):
+        if robot_type == "g1":
+            lidar_sensor = LidarRtx(f'/World/envs/env_{i}/Robot/head_link/lidar_sensor',
+                                    translation=(0.0, 0.0, 1.0),
+                                    orientation=(1.0, 0.0, 0.0, 0.0),
+                                    config_file_name= "Unitree_L1",
+                                )
+        
+        else:
+            lidar_sensor = LidarRtx(f'/World/envs/env_{i}/Robot/base/lidar_sensor',
+                                    translation=(0.28945, 0, -0.046825),
+                                    orientation=(1.0, 0.0, 0.0, 0.0),
+                                    config_file_name= "Unitree_L1",
+                                    )
+
+        if debug:
+            # Create the debug draw pipeline in the post process graph
+            writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
+            writer.attach([lidar_sensor.get_render_product_path()])
+
+        annotator = rep.AnnotatorRegistry.get_annotator("RtxSensorCpuIsaacCreateRTXLidarScanBuffer")
+        annotator.attach(lidar_sensor.get_render_product_path())
+        annotator_lst.append(annotator)
+    return annotator_lst
+
+
+def add_camera(num_envs, robot_type):
+    for i in range(num_envs):
+        cameraCfg = CameraCfg(
+            prim_path=f"/World/envs/env_{i}/Robot/base/front_cam",
+            update_period=0.1,
+            height=480,
+            width=640,
+            data_types=["rgb"],
+            spawn=sim_utils.PinholeCameraCfg(
+                focal_length=24.0, focus_distance=400.0, horizontal_aperture=20.955, clipping_range=(0.1, 1.0e5)
+            ),
+            offset=CameraCfg.OffsetCfg(pos=(0.32487, -0.00095, 0.05362), rot=(0.5, -0.5, 0.5, -0.5), convention="ros"),
+        )
+
+        if robot_type == "g1":
+            cameraCfg.prim_path = f"/World/envs/env_{i}/Robot/head_link/front_cam"
+            cameraCfg.offset = CameraCfg.OffsetCfg(pos=(0.0, 0.0, 0.0), rot=(0.5, -0.5, 0.5, -0.5), convention="ros")
+
+        Camera(cameraCfg)
+
+
+def pub_robo_data_ros2(robot_type, num_envs, base_node, env, annotator_lst, start_time):
+
+    for i in range(num_envs):
+        # publish ros2 info
+        base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[i], i)
+        base_node.publish_odom(env.env.scene["robot"].data.root_state_w[i, :3], env.env.scene["robot"].data.root_state_w[i, 3:7], i)
+        
+        
+        if robot_type == "go2":
+            base_node.publish_robot_state([
+                env.env.scene["contact_forces"].data.net_forces_w[i][4][2], 
+                env.env.scene["contact_forces"].data.net_forces_w[i][8][2], 
+                env.env.scene["contact_forces"].data.net_forces_w[i][14][2], 
+                env.env.scene["contact_forces"].data.net_forces_w[i][18][2]
+                ], i)
+
+        try:
+            if (time.time() - start_time) > 1/20:
+                for j in range(num_envs):
+                    data = annotator_lst[j].get_data()
+                    point_cloud = update_meshes_for_cloud2(
+                        data['data'], env.env.scene["robot"].data.root_state_w[j, :3], 
+                        env.env.scene["robot"].data.root_state_w[j, 3:7]
+                        )
+                    base_node.publish_lidar(point_cloud, j)
+                start_time = time.time()
+        except :
+            pass
 
 
 class RobotBaseNode(Node):
@@ -55,19 +153,16 @@ class RobotBaseNode(Node):
         joint_state = JointState()
         joint_state.header.stamp = self.get_clock().now().to_msg()
 
-        joint_state.name = [
-            f"robot{robot_num}/"+joint_names_lst[0], f"robot{robot_num}/"+joint_names_lst[1], f"robot{robot_num}/"+joint_names_lst[2],
-            f"robot{robot_num}/"+joint_names_lst[3], f"robot{robot_num}/"+joint_names_lst[4], f"robot{robot_num}/"+joint_names_lst[5],
-            f"robot{robot_num}/"+joint_names_lst[6], f"robot{robot_num}/"+joint_names_lst[7], f"robot{robot_num}/"+joint_names_lst[8],
-            f"robot{robot_num}/"+joint_names_lst[9], f"robot{robot_num}/"+joint_names_lst[10], f"robot{robot_num}/"+joint_names_lst[11],
-            ]
-    
-        joint_state.position = [
-            joint_state_lst[0].item(), joint_state_lst[1].item(), joint_state_lst[2].item(),
-            joint_state_lst[3].item(), joint_state_lst[4].item(), joint_state_lst[5].item(),
-            joint_state_lst[6].item(), joint_state_lst[7].item(), joint_state_lst[8].item(),
-            joint_state_lst[9].item(), joint_state_lst[10].item(), joint_state_lst[11].item(),
-            ]
+        joint_state_names_formated = []
+        for joint_name in joint_names_lst:
+            joint_state_names_formated.append(f"robot{robot_num}/"+joint_name)
+
+        joint_state_formated = []
+        for joint_state_val in joint_state_lst:
+            joint_state_formated.append(joint_state_val.item())
+
+        joint_state.name = joint_state_names_formated
+        joint_state.position = joint_state_formated
         self.joint_pub[robot_num].publish(joint_state)
 
     def publish_odom(self, base_pos, base_rot, robot_num):

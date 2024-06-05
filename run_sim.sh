@@ -39,4 +39,4 @@ conda activate isaaclab
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
 # Run the Python script
-python main.py
+python main.py --robot_amount 1 --robot go2

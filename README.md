@@ -12,6 +12,13 @@ Real time Go2 Balancing:
 </p>
 
 
+Real time G1 Balancing:
+
+<p align="center">
+<img width="1280" height="600" src="https://github.com/abizovnuralem/go2_omniverse/assets/33475993/d035f72a-8996-461c-a902-38e68052d029" alt='Go2'>
+</p>
+
+
 Go2 Ros2 Camera stream:
 
 <p align="center">
@@ -72,6 +79,7 @@ VR support:
 9. Nav2 with Slam_toolbox :white_check_mark:
 10. Bunch of RL-envs for custom dog training :white_check_mark:
 11. Custom numbers of robots :white_check_mark:
+12. Added G1 Unitree support :white_check_mark:
 
 ## Your feedback and support mean the world to us. 
 
@@ -127,10 +135,16 @@ with Isaac_sim/extension.toml in this repo.
 
 ## Usage
 The current project was tested on Ubuntu 22.04, IsaacSim 4.0 with Isaac Lab and Nvidia Driver Version: 545.
-To start the project, execute:
+To start the project with Unitree GO2, execute:
 
 ```
 ./run_sim.sh
+```
+
+To start the project with Unitree G1, execute:
+
+```
+./run_sim_g1.sh
 ```
 
 You can control the dog using "WASD" keyboard commands
