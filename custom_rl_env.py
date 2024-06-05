@@ -49,6 +49,9 @@ from omni.isaac.lab.utils.noise import AdditiveUniformNoiseCfg as Unoise
 import omni.isaac.lab_tasks.manager_based.locomotion.velocity.mdp as mdp
 
 
+from robots.g1.config import G1_CFG
+
+
 base_command = []
 
 
@@ -299,3 +302,22 @@ class UnitreeGo2CustomEnvCfg(LocomotionVelocityRoughEnvCfg):
 
         # terminations
         self.terminations.base_contact.params["sensor_cfg"].body_names = "base"
+
+
+@configclass
+class G1RoughEnvCfg(LocomotionVelocityRoughEnvCfg):
+    def __post_init__(self):
+        # post init of parent
+        super().__post_init__()
+        # Scene
+        G1_MINIMAL_CFG = G1_CFG.copy()
+        G1_MINIMAL_CFG.spawn.usd_path = "./robots/g1/g1.usd"
+        self.scene.robot = G1_MINIMAL_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
+        self.scene.height_scanner.prim_path = "{ENV_REGEX_NS}/Robot/torso_link"
+        
+        # rewards
+        self.rewards.feet_air_time.params["sensor_cfg"].body_names = ".*_ankle_roll_link"
+        self.rewards.undesired_contacts = None
+
+        # Terminations
+        self.terminations.base_contact.params["sensor_cfg"].body_names = ["torso_link"]

@@ -1,0 +1,241 @@
+--- git status ---
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   source/extensions/omni.isaac.lab_assets/omni/isaac/lab_assets/unitree.py
+	modified:   source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/manager_based/locomotion/velocity/mdp/rewards.py
+	modified:   source/standalone/workflows/rsl_rl/train.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/manager_based/locomotion/velocity/config/g1/
+	source/exts/
+
+no changes added to commit (use "git add" and/or "git commit -a") 
+
+
+--- git diff ---
+diff --git a/source/extensions/omni.isaac.lab_assets/omni/isaac/lab_assets/unitree.py b/source/extensions/omni.isaac.lab_assets/omni/isaac/lab_assets/unitree.py
+index 8533010..43f55b2 100644
+--- a/source/extensions/omni.isaac.lab_assets/omni/isaac/lab_assets/unitree.py
++++ b/source/extensions/omni.isaac.lab_assets/omni/isaac/lab_assets/unitree.py
+@@ -265,3 +265,160 @@ H1_MINIMAL_CFG.spawn.usd_path = f"{ISAACLAB_NUCLEUS_DIR}/Robots/Unitree/H1/h1_mi
+ 
+ This configuration removes most collision meshes to speed up simulation.
+ """
++
++
++
++G1_CFG = ArticulationCfg(
++    spawn=sim_utils.UsdFileCfg(
++        usd_path="/home/brimo/Desktop/g1/g1_t.usd",
++        activate_contact_sensors=True,
++        rigid_props=sim_utils.RigidBodyPropertiesCfg(
++            disable_gravity=False,
++            retain_accelerations=False,
++            linear_damping=0.0,
++            angular_damping=0.0,
++            max_linear_velocity=1000.0,
++            max_angular_velocity=1000.0,
++            max_depenetration_velocity=1.0,
++        ),
++        articulation_props=sim_utils.ArticulationRootPropertiesCfg(
++            enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=4
++        ),
++    ),
++    init_state=ArticulationCfg.InitialStateCfg(
++        pos=(0.0, 0.0, 0.70),
++        joint_pos={
++            
++            ".*_hip_pitch_joint": -0.28,
++            ".*_knee_joint": 0.63,
++            ".*_ankle_pitch_joint": -0.35,
++
++            ".*_elbow_pitch_joint": 0.87,
++            "left_shoulder_roll_joint": 0.16,
++            "left_shoulder_pitch_joint": 0.35,
++            
++            "right_shoulder_roll_joint": -0.16,
++            "right_shoulder_pitch_joint": 0.35,
++            
++            "left_one_joint": 1.0,
++            "right_one_joint": -1.0,
++
++
++        },
++        joint_vel={".*": 0.0},
++    ),
++    soft_joint_pos_limit_factor=0.9,
++    actuators={
++        "legs": ImplicitActuatorCfg(
++            joint_names_expr=[
++                ".*_hip_yaw_joint", 
++                ".*_hip_roll_joint",
++                 ".*_hip_pitch_joint", 
++                ".*_knee_joint",
++                "torso_joint"
++            ],
++            effort_limit=300,
++            velocity_limit=100.0,
++            stiffness={
++                ".*_hip_yaw_joint": 150.0,
++                ".*_hip_roll_joint": 150.0,
++                ".*_hip_pitch_joint": 200.0,
++                ".*_knee_joint": 200.0,
++                "torso_joint": 200.0,
++            },
++            damping={
++                ".*_hip_yaw_joint": 5.0,
++                ".*_hip_roll_joint": 5.0,
++                ".*_hip_pitch_joint": 5.0,
++                ".*_knee_joint": 5.0,
++                "torso_joint": 5.0,
++            },
++            armature={
++                ".*_hip_yaw_joint": 0.1,
++                ".*_hip_roll_joint": 0.1,
++                ".*_hip_pitch_joint": 0.1,
++                ".*_knee_joint": 0.1,
++                "torso_joint": 0.1,
++            },
++        ),
++        "feet": ImplicitActuatorCfg(
++            joint_names_expr=[
++                ".*_ankle_pitch_joint", 
++                ".*_ankle_roll_joint"
++            ],
++            stiffness={
++                ".*_ankle_pitch_joint": 20.0,
++                ".*_ankle_roll_joint": 20.0
++            },
++            damping={
++                ".*_ankle_pitch_joint": 4.0,
++                ".*_ankle_roll_joint": 4.0
++            },
++            armature={
++                ".*_ankle_pitch_joint": 0.1,
++                ".*_ankle_roll_joint": 0.1
++            },
++        ),
++        "arms": ImplicitActuatorCfg(
++            joint_names_expr=[
++                ".*_shoulder_pitch_joint",
++                ".*_shoulder_roll_joint",
++                ".*_shoulder_yaw_joint",
++                ".*_elbow_pitch_joint",
++                ".*_elbow_roll_joint",
++                ".*_five_joint",
++                ".*_three_joint",
++                ".*_six_joint",
++                ".*_four_joint",
++                ".*_zero_joint",
++                ".*_one_joint",
++                ".*_two_joint"
++            ],
++            effort_limit=300,
++            velocity_limit=100.0,
++            stiffness={
++                ".*_shoulder_pitch_joint": 40.0,
++                ".*_shoulder_roll_joint": 40.0,
++                ".*_shoulder_yaw_joint": 40.0,
++                ".*_elbow_pitch_joint": 40.0,
++                ".*_elbow_roll_joint": 40.0,
++                ".*_five_joint": 40.0,
++                ".*_three_joint": 40.0,
++                ".*_six_joint": 40.0,
++                ".*_four_joint": 40.0,
++                ".*_zero_joint": 40.0,
++                ".*_one_joint": 40.0,
++                ".*_two_joint": 40.0,
++            },
++            damping={
++                ".*_shoulder_pitch_joint": 10.0,
++                ".*_shoulder_roll_joint": 10.0,
++                ".*_shoulder_yaw_joint": 10.0,
++                ".*_elbow_pitch_joint": 10.0,
++                ".*_elbow_roll_joint": 10.0,
++                ".*_five_joint": 10.0,
++                ".*_three_joint": 10.0,
++                ".*_six_joint": 10.0,
++                ".*_four_joint": 10.0,
++                ".*_zero_joint": 10.0,
++                ".*_one_joint": 10.0,
++                ".*_two_joint": 10.0,
++            },
++            armature={
++                ".*_shoulder_pitch_joint": 0.1,
++                ".*_shoulder_roll_joint": 0.1,
++                ".*_shoulder_yaw_joint": 0.1,
++                ".*_elbow_pitch_joint": 0.1,
++                ".*_elbow_roll_joint": 0.1,
++                ".*_five_joint": 0.1,
++                ".*_three_joint": 0.1,
++                ".*_six_joint": 0.1,
++                ".*_four_joint": 0.1,
++                ".*_zero_joint": 0.1,
++                ".*_one_joint": 0.1,
++                ".*_two_joint": 0.1,
++            },
++        ),
++    },
++)
++"""Configuration for the Unitree G1 Humanoid robot."""
+diff --git a/source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/manager_based/locomotion/velocity/mdp/rewards.py b/source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/manager_based/locomotion/velocity/mdp/rewards.py
+index b3a1756..96d2612 100644
+--- a/source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/manager_based/locomotion/velocity/mdp/rewards.py
++++ b/source/extensions/omni.isaac.lab_tasks/omni/isaac/lab_tasks/manager_based/locomotion/velocity/mdp/rewards.py
+@@ -47,6 +47,7 @@ def feet_air_time_positive_biped(env, command_name: str, threshold: float, senso
+     If the commands are small (i.e. the agent is not supposed to take a step), then the reward is zero.
+     """
+     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
++
+     # compute the reward
+     air_time = contact_sensor.data.current_air_time[:, sensor_cfg.body_ids]
+     contact_time = contact_sensor.data.current_contact_time[:, sensor_cfg.body_ids]
+@@ -60,6 +61,28 @@ def feet_air_time_positive_biped(env, command_name: str, threshold: float, senso
+     return reward
+ 
+ 
++def feet_leave_ground(env, sensor_cfg: SceneEntityCfg, threshold: float) -> torch.Tensor:
++    """
++    Terminate if the robot's feet have left the ground.
++
++    Args:
++        env: The environment containing the sensors.
++        threshold (float): The threshold below which a contact force is considered as the feet having left the ground.
++        sensor_cfg (SceneEntityCfg): Configuration for the contact sensor.
++
++    Returns:
++        torch.Tensor: A tensor indicating whether the feet have left the ground for each instance.
++    """
++    contact_sensor = env.scene.sensors[sensor_cfg.name]
++    contact_forces = contact_sensor.data.net_forces_w[:, sensor_cfg.body_ids].norm(dim=-1)
++
++    # Check if contact forces are below the threshold
++    feet_off_ground = torch.all(contact_forces < threshold, dim=1)
++
++    return feet_off_ground
++
++
++
+ def feet_slide(env, sensor_cfg: SceneEntityCfg, asset_cfg: SceneEntityCfg = SceneEntityCfg("robot")) -> torch.Tensor:
+     # Penalize feet sliding
+     contact_sensor: ContactSensor = env.scene.sensors[sensor_cfg.name]
+diff --git a/source/standalone/workflows/rsl_rl/train.py b/source/standalone/workflows/rsl_rl/train.py
+index 748d9bd..d351b2a 100644
+--- a/source/standalone/workflows/rsl_rl/train.py
++++ b/source/standalone/workflows/rsl_rl/train.py
+@@ -24,8 +24,8 @@ parser.add_argument("--cpu", action="store_true", default=False, help="Use CPU p
+ parser.add_argument(
+     "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
+ )
+-parser.add_argument("--num_envs", type=int, default=None, help="Number of environments to simulate.")
+-parser.add_argument("--task", type=str, default=None, help="Name of the task.")
++parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to simulate.")
++parser.add_argument("--task", type=str, default="Isaac-Velocity-Rough-G1-v0", help="Name of the task.")
+ parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
+ parser.add_argument("--max_iterations", type=int, default=None, help="RL Policy training iterations.")
+ # append RSL-RL cli arguments
