@@ -1,6 +1,14 @@
-# Welcome to the Unitree Go2/G1 Omniverse Project!
+![Digital Twins](https://github.com/abizovnuralem/go2_ros2_sdk/assets/33475993/ddbe30ab-21d1-46fd-b44b-198efba92771)
 
-I am thrilled to announce that the Unitree Go2/G1 robot has now been integrated with the Nvidia Isaac Sim 4.0 (Isaac Lab), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
+
+# Welcome to the Unitree Go2/G1 Digital Twins Project!
+
+[![IsaacSim](https://img.shields.io/badge/IsaacSim-4.0-silver.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
+[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
+[![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/22.04/)
+[![License](https://img.shields.io/badge/license-BSD--2-yellow.svg)](https://opensource.org/licenses/BSD-2-Clause)
+
+We are thrilled to announce that the Unitree Go2/G1 robot has now been integrated with the Nvidia Isaac Sim 4.0 (Isaac Lab), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
 
 Get ready to take your research to the next level with this powerful new resource at your fingertips!
 
@@ -103,7 +111,7 @@ Full instruction:
 https://isaac-sim.github.io/IsaacLab/source/setup/installation/binaries_installation.html
 ```
 
-Some suggestions from me:
+Some suggestions:
 1. You need to check nvidia-smi, it should work, before installing Isaac Sim 4.0
 2. You need to install Miniconda and execute: conda config --set auto_activate_base false
 3. Install Omniverse launcher and then install Isaac Sim 4.0.
@@ -151,7 +159,7 @@ You can control the dog using "WASD" keyboard commands
 
 ## ROS2 SDK
 
-You can use https://github.com/abizovnuralem/go2_ros2_sdk or https://github.com/unitreerobotics/unitree_ros2 as a basement for your ROS2 setup.
+You can use https://github.com/abizovnuralem/go2_ros2_sdk as a basement for your ROS2 setup.
 
 
 ## Select custom env
