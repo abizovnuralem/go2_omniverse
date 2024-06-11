@@ -24,6 +24,8 @@
 import asyncio
 import time
 
+import numpy as np
+
 
 from rclpy.node import Node
 from rclpy.qos import QoSProfile
@@ -32,7 +34,9 @@ from geometry_msgs.msg import TransformStamped
 from tf2_ros import TransformBroadcaster
 from go2_interfaces.msg import Go2State
 from std_msgs.msg import Header
-from sensor_msgs.msg import PointCloud2, PointField
+
+from nav_msgs.msg import Odometry
+from sensor_msgs.msg import PointCloud2, PointField, Imu
 from sensor_msgs_py import point_cloud2
 
 
@@ -46,11 +50,13 @@ import omni.isaac.lab.sim as sim_utils
 
 
 def update_meshes_for_cloud2(position_array, origin, rot):
+
     q = rot.cpu().numpy()
     rotation = Rotation.from_quat([q[1], q[2], q[3], q[0]])
     rotated_vectors = rotation.apply(position_array)
-    # Recalculate origin
     rotated_vectors += origin.cpu().numpy()
+    rotated_vectors += [0.0, 0.0, 0.4]
+    
     return rotated_vectors
 
 
@@ -59,14 +65,18 @@ def add_rtx_lidar(num_envs, robot_type, debug=False):
     for i in range(num_envs):
         if robot_type == "g1":
             lidar_sensor = LidarRtx(f'/World/envs/env_{i}/Robot/head_link/lidar_sensor',
-                                    translation=(0.0, 0.0, 1.0),
+                                    rotation_frequency = 200,
+                                    pulse_time=1, 
+                                    translation=(0.0, 0.0, 0.0),
                                     orientation=(1.0, 0.0, 0.0, 0.0),
                                     config_file_name= "Unitree_L1",
                                 )
         
         else:
             lidar_sensor = LidarRtx(f'/World/envs/env_{i}/Robot/base/lidar_sensor',
-                                    translation=(0.28945, 0, -0.046825),
+                                    rotation_frequency = 200,
+                                    pulse_time=1, 
+                                    translation=(0.0, 0, 0.4),
                                     orientation=(1.0, 0.0, 0.0, 0.0),
                                     config_file_name= "Unitree_L1",
                                     )
@@ -109,6 +119,7 @@ def pub_robo_data_ros2(robot_type, num_envs, base_node, env, annotator_lst, star
         # publish ros2 info
         base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[i], i)
         base_node.publish_odom(env.env.scene["robot"].data.root_state_w[i, :3], env.env.scene["robot"].data.root_state_w[i, 3:7], i)
+        base_node.publish_imu(env.env.scene["robot"].data.root_state_w[i, 3:7], env.env.scene["robot"].data.root_lin_vel_b[i, :], env.env.scene["robot"].data.root_ang_vel_b[i, :], i)
         
         
         if robot_type == "go2":
@@ -141,11 +152,15 @@ class RobotBaseNode(Node):
         self.joint_pub = []
         self.go2_state_pub = []
         self.go2_lidar_pub = []
+        self.odom_pub = []
+        self.imu_pub = []
 
         for i in range(num_envs):
             self.joint_pub.append(self.create_publisher(JointState, f'robot{i}/joint_states', qos_profile))
             self.go2_state_pub.append(self.create_publisher(Go2State, f'robot{i}/go2_states', qos_profile))
             self.go2_lidar_pub.append(self.create_publisher(PointCloud2, f'robot{i}/point_cloud2', qos_profile))
+            self.odom_pub.append(self.create_publisher(Odometry, f'robot{i}/odom', qos_profile))
+            self.imu_pub.append(self.create_publisher(Imu, f'robot{i}/imu', qos_profile))
         self.broadcaster= TransformBroadcaster(self, qos=qos_profile)
         
     def publish_joints(self, joint_names_lst, joint_state_lst, robot_num):
@@ -172,12 +187,46 @@ class RobotBaseNode(Node):
         odom_trans.child_frame_id = f"robot{robot_num}/base_link"
         odom_trans.transform.translation.x = base_pos[0].item()
         odom_trans.transform.translation.y = base_pos[1].item()
-        odom_trans.transform.translation.z = base_pos[2].item() + 0.07
+        odom_trans.transform.translation.z = base_pos[2].item()
         odom_trans.transform.rotation.x = base_rot[1].item()
         odom_trans.transform.rotation.y = base_rot[2].item()
         odom_trans.transform.rotation.z = base_rot[3].item()
         odom_trans.transform.rotation.w = base_rot[0].item()
         self.broadcaster.sendTransform(odom_trans)
+
+        odom_topic = Odometry()
+        odom_topic.header.stamp = self.get_clock().now().to_msg()
+        odom_topic.header.frame_id = "odom"
+        odom_topic.child_frame_id = f"robot{robot_num}/base_link"
+        odom_topic.pose.pose.position.x = base_pos[0].item()
+        odom_topic.pose.pose.position.y = base_pos[1].item()
+        odom_topic.pose.pose.position.z = base_pos[2].item()
+        odom_topic.pose.pose.orientation.x = base_rot[1].item()
+        odom_topic.pose.pose.orientation.y = base_rot[2].item()
+        odom_topic.pose.pose.orientation.z = base_rot[3].item()
+        odom_topic.pose.pose.orientation.w = base_rot[0].item()
+        self.odom_pub[robot_num].publish(odom_topic)
+
+
+    def publish_imu(self, base_rot, base_lin_vel, base_ang_vel, robot_num):
+        imu_trans = Imu()
+        imu_trans.header.stamp = self.get_clock().now().to_msg()
+        imu_trans.header.frame_id = f"robot{robot_num}/base_link"
+
+        imu_trans.linear_acceleration.x = base_lin_vel[0].item()
+        imu_trans.linear_acceleration.y = base_lin_vel[1].item()
+        imu_trans.linear_acceleration.z = base_lin_vel[2].item()
+
+        imu_trans.angular_velocity.x = base_ang_vel[0].item()
+        imu_trans.angular_velocity.y = base_ang_vel[1].item()
+        imu_trans.angular_velocity.z = base_ang_vel[2].item()
+        
+        imu_trans.orientation.x = base_rot[1].item()
+        imu_trans.orientation.y = base_rot[2].item()
+        imu_trans.orientation.z = base_rot[3].item()
+        imu_trans.orientation.w = base_rot[0].item()
+        
+        self.imu_pub[robot_num].publish(imu_trans)
 
     def publish_robot_state(self, foot_force_lst, robot_num):
 
