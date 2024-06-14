@@ -48,12 +48,12 @@ ext_manager = omni.kit.app.get_app().get_extension_manager()
 ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
 
 # FOR VR SUPPORT
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.core", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.steamvr", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.simulatedxr", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.openxr", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.telemetry", True)
-ext_manager.set_extension_enabled_immediate("omni.kit.xr.profile.vr", True)
+# ext_manager.set_extension_enabled_immediate("omni.kit.xr.core", True)
+# ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.steamvr", True)
+# ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.simulatedxr", True)
+# ext_manager.set_extension_enabled_immediate("omni.kit.xr.system.openxr", True)
+# ext_manager.set_extension_enabled_immediate("omni.kit.xr.telemetry", True)
+# ext_manager.set_extension_enabled_immediate("omni.kit.xr.profile.vr", True)
 
 
 """Rest everything follows."""
@@ -215,7 +215,7 @@ def run_sim():
     base_node = RobotBaseNode(env_cfg.scene.num_envs)
     add_cmd_sub(env_cfg.scene.num_envs)
 
-    annotator_lst = add_rtx_lidar(env_cfg.scene.num_envs, args_cli.robot, True)
+    annotator_lst = add_rtx_lidar(env_cfg.scene.num_envs, args_cli.robot, False)
     add_camera(env_cfg.scene.num_envs, args_cli.robot)
     setup_custom_env()
     
