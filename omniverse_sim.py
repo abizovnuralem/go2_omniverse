@@ -90,34 +90,34 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
     if len(custom_rl_env.base_command) > 0:
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
             if event.input.name == 'W':
-                custom_rl_env.base_command[0] = [1, 0, 0]
+                custom_rl_env.base_command["0"] = [1, 0, 0]
             if event.input.name == 'S':
-                custom_rl_env.base_command[0] = [-1, 0, 0]
+                custom_rl_env.base_command["0"] = [-1, 0, 0]
             if event.input.name == 'A':
-                custom_rl_env.base_command[0] = [0, 1, 0]
+                custom_rl_env.base_command["0"] = [0, 1, 0]
             if event.input.name == 'D':
-                custom_rl_env.base_command[0] = [0, -1, 0]
+                custom_rl_env.base_command["0"] = [0, -1, 0]
             if event.input.name == 'Q':
-                custom_rl_env.base_command[0] = [0, 0, 1]
+                custom_rl_env.base_command["0"] = [0, 0, 1]
             if event.input.name == 'E':
-                custom_rl_env.base_command[0] = [0, 0, -1]
+                custom_rl_env.base_command["0"] = [0, 0, -1]
 
             if len(custom_rl_env.base_command) > 1:
                 if event.input.name == 'I':
-                    custom_rl_env.base_command[1] = [1, 0, 0]
+                    custom_rl_env.base_command["1"] = [1, 0, 0]
                 if event.input.name == 'K':
-                    custom_rl_env.base_command[1] = [-1, 0, 0]
+                    custom_rl_env.base_command["1"] = [-1, 0, 0]
                 if event.input.name == 'J':
-                    custom_rl_env.base_command[1] = [0, 1, 0]
+                    custom_rl_env.base_command["1"] = [0, 1, 0]
                 if event.input.name == 'L':
-                    custom_rl_env.base_command[1] = [0, -1, 0]
+                    custom_rl_env.base_command["1"] = [0, -1, 0]
                 if event.input.name == 'U':
-                    custom_rl_env.base_command[1] = [0, 0, 1]
+                    custom_rl_env.base_command["1"] = [0, 0, 1]
                 if event.input.name == 'O':
-                    custom_rl_env.base_command[1] = [0, 0, -1]
+                    custom_rl_env.base_command["1"] = [0, 0, -1]
         elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
             for i in range(len(custom_rl_env.base_command)):
-                custom_rl_env.base_command[i] = [0, 0, 0]
+                custom_rl_env.base_command[str(i)] = [0, 0, 0]
     return True
 
 
@@ -138,25 +138,23 @@ def cmd_vel_cb(msg, num_robot):
     x = msg.linear.x
     y = msg.linear.y
     z = msg.angular.z
-    custom_rl_env.base_command[num_robot] = [x, y, z]
+    custom_rl_env.base_command[str(num_robot)] = [x, y, z]
 
 
 
 def add_cmd_sub(num_envs):
     node_test = rclpy.create_node('position_velocity_publisher')
     for i in range(num_envs):
-        node_test.create_subscription(Twist, f'robot{i}/cmd_vel', lambda msg: cmd_vel_cb(msg, i), 10)
+        node_test.create_subscription(Twist, f'robot{i}/cmd_vel', lambda msg, i=i: cmd_vel_cb(msg, str(i)), 10)
     # Spin in a separate thread
-    thread = threading.Thread(target=rclpy.spin, args=(node_test, ), daemon=True)
+    thread = threading.Thread(target=rclpy.spin, args=(node_test,), daemon=True)
     thread.start()
 
 
 
 def specify_cmd_for_robots(numv_envs):
-    base_cmd = []
-    for _ in range(numv_envs):
-        base_cmd.append([0, 0, 0])
-    custom_rl_env.base_command = base_cmd
+    for i in range(numv_envs):
+        custom_rl_env.base_command[str(i)] = [0, 0, 0]
 def run_sim():
     
     # acquire input interface

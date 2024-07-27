@@ -52,7 +52,7 @@ import omni.isaac.lab_tasks.manager_based.locomotion.velocity.mdp as mdp
 from robots.g1.config import G1_CFG
 
 
-base_command = []
+base_command = {}
 
 
 def constant_commands(env: ManagerBasedRLEnvCfg) -> torch.Tensor:
@@ -60,7 +60,7 @@ def constant_commands(env: ManagerBasedRLEnvCfg) -> torch.Tensor:
     """The generated command from the command generator."""
     tensor_lst = torch.tensor([0, 0, 0], device=env.device).repeat(env.num_envs, 1)
     for i in range(env.num_envs):
-        tensor_lst[i] = torch.tensor(base_command[i], device=env.device)
+        tensor_lst[i] = torch.tensor(base_command[str(i)], device=env.device)
     return tensor_lst
 
 
