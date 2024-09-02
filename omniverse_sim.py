@@ -4,7 +4,7 @@ from __future__ import annotations
 
 """Launch Isaac Sim Simulator first."""
 import argparse
-from omni.isaac.lab.app import AppLauncher
+from omni.isaac.orbit.app import AppLauncher
 
 
 import cli_args  
@@ -24,6 +24,7 @@ parser.add_argument("--task", type=str, default="Isaac-Velocity-Rough-Unitree-Go
 parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
 parser.add_argument("--custom_env", type=str, default="office", help="Setup the environment")
 parser.add_argument("--robot", type=str, default="go2", help="Setup the robot")
+parser.add_argument("--terrain", type=str, default="rough", help="Setup the robot")
 parser.add_argument("--robot_amount", type=int, default=1, help="Setup the robot amount")
 
 
@@ -62,12 +63,12 @@ import torch
 import carb
 
 
-from omni.isaac.lab_tasks.utils import get_checkpoint_path
-from omni.isaac.lab_tasks.utils.wrappers.rsl_rl import (
+from omni.isaac.orbit_tasks.utils import get_checkpoint_path
+from omni.isaac.orbit_tasks.utils.wrappers.rsl_rl import (
     RslRlOnPolicyRunnerCfg,
     RslRlVecEnvWrapper
 )
-import omni.isaac.lab.sim as sim_utils
+import omni.isaac.orbit.sim as sim_utils
 import omni.appwindow
 from rsl_rl.runners import OnPolicyRunner
 
@@ -123,11 +124,11 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
 
 def setup_custom_env():
     try:
-        if (args_cli.custom_env == "warehouse"):
+        if (args_cli.custom_env == "warehouse" and args_cli.terrain == 'flat'):
             cfg_scene = sim_utils.UsdFileCfg(usd_path="./envs/warehouse.usd")
             cfg_scene.func("/World/warehouse", cfg_scene, translation=(0.0, 0.0, 0.0))
 
-        if (args_cli.custom_env == "office"):
+        if (args_cli.custom_env == "office" and args_cli.terrain == 'flat'):
             cfg_scene = sim_utils.UsdFileCfg(usd_path="./envs/office.usd")
             cfg_scene.func("/World/office", cfg_scene, translation=(0.0, 0.0, 0.0))
     except:

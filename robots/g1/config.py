@@ -1,7 +1,7 @@
 
-import omni.isaac.lab.sim as sim_utils
-from omni.isaac.lab.actuators import ImplicitActuatorCfg
-from omni.isaac.lab.assets.articulation import ArticulationCfg
+import omni.isaac.orbit.sim as sim_utils
+from omni.isaac.orbit.actuators import ImplicitActuatorCfg
+from omni.isaac.orbit.assets.articulation import ArticulationCfg
 
 
 G1_CFG = ArticulationCfg(
@@ -22,7 +22,7 @@ G1_CFG = ArticulationCfg(
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
-        pos=(0.0, 0.0, 0.70),
+        pos=(0.0, 0.0, 0.80),
         joint_pos={
             
             ".*_hip_pitch_joint": -0.28,
