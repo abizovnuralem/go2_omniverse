@@ -3,12 +3,12 @@
 
 # Welcome to the Unitree Go2/G1 Digital Twins Project!
 
-[![IsaacSim](https://img.shields.io/badge/IsaacSim-4.0-silver.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
+[![IsaacSim](https://img.shields.io/badge/IsaacSim-orbit-gold.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
 [![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
 [![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/22.04/)
 [![License](https://img.shields.io/badge/license-BSD--2-yellow.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
-We are thrilled to announce that the Unitree Go2/G1 robot has now been integrated with the Nvidia Isaac Sim 4.0 (Isaac Lab), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
+We are thrilled to announce that the Unitree Go2/G1 robot has now been integrated with the Nvidia Isaac Sim (Orbit), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
 
 Get ready to take your research to the next level with this powerful new resource at your fingertips!
 
@@ -101,22 +101,35 @@ Together, let's push the boundaries of what's possible with the Unitree Go2/G1 a
 ## System requirements
 You need to install:
 1. Ubuntu 22.04
-2. Nvidia Isaac Sim 4.0
-3. Nvidia Isaac Lab
+2. Nvidia Isaac Sim 2023.1.1
+3. Nvidia Orbit 0.3.0
 4. Ros2 Humble
 
 
 Full instruction:
 ```
-https://isaac-sim.github.io/IsaacLab/source/setup/installation/binaries_installation.html
+1. Use this specific IsaacLab repo version: https://github.com/isaac-sim/IsaacLab/releases/tag/v0.3.1
+2. execute in ubuntu terminal:
+export ISAACSIM_PATH="${HOME}/.local/share/ov/pkg/isaac-sim-2023.1.1"
+export ISAACSIM_PYTHON_EXE="${ISAACSIM_PATH}/python.sh"
+and also put it inside .bashrc file
+3. Inside the root folder of Orbit repo (https://github.com/isaac-sim/IsaacLab/releases/tag/v0.3.1) execute ln -s ${ISAACSIM_PATH} _isaac_sim
+4. ./orbit.sh --conda
+5. conda activate orbit
+6. sudo apt install cmake build-essential
+7. ./orbit.sh --install
+8. ./orbit.sh --extra rsl_rl
+9. verify the installation using "python source/standalone/tutorials/00_sim/create_empty.py" You should be inside conda env.
+10. You need to check that you have "Isaac Sim Python 2023.1.1 - New Stage*" on the top of the window.
+11. go to the current repo project (this repo)
+12. execute ./run_sim.sh
 ```
 
 Some suggestions:
-1. You need to check nvidia-smi, it should work, before installing Isaac Sim 4.0
+1. You need to check nvidia-smi, it should work, before installing Isaac Sim (Orbit)
 2. You need to install Miniconda and execute: conda config --set auto_activate_base false
-3. Install Omniverse launcher and then install Isaac Sim 4.0.
-4. Create conda env then activate it, also execute ./isaaclab.sh --install 
-Also, you need to install ROS2 on your system and configure it:
+3. Install Omniverse launcher and then install Isaac Sim (Orbit).
+4. You need to install ROS2 on your system and configure it:
 
 ```
 https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#isaac-sim-app-install-ros
@@ -136,13 +149,11 @@ git clone https://github.com/abizovnuralem/go2_omniverse/ --recurse-submodules -
 First, you need to copy files from Isaac Sim folder to your local Isaac Sim installation in order to use Unitree L1 lidar inside Orbit.
 
 ```
-1. You need to replace original file that located in ~/.local/share/ov/pkg/isaac-sim-4.0.0/exts/omni.isaac.sensor/config/extrensiom.toml 
-with Isaac_sim/extension.toml in this repo.
-2. You need to add Unitree_L1.json to IsaacLab repo folder, where IsaacLab/source/exts/omni.isaac.sensor/data/lidar_configs/Unitree/Unitree_L1.json will be the final path (If it doesnt exists, create it)
+1. You need to add Unitree_L1.json to IsaacLab (Orbit) repo folder, where IsaacLab-0.3.1/source/data/sensors/lidar/Unitree/Unitree_L1.json will be the final path (If it doesnt exists, create it)
 ```
 
 ## Usage
-The current project was tested on Ubuntu 22.04, IsaacSim 4.0 with Isaac Lab and Nvidia Driver Version: 545.
+The current project was tested on Ubuntu 22.04, IsaacSim 2023.1.1 with Orbit 0.3.0 and Nvidia Driver Version: 545.
 To start the project with Unitree GO2, execute:
 
 ```
@@ -165,7 +176,7 @@ You can use https://github.com/abizovnuralem/go2_ros2_sdk as a basement for your
 ## Select custom env
 
 To use predifined custom envs, you need to download files from https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing and place them to /envs folder.
-Then you can execute it via python main.py --custom_env=office or python main.py --custom_env=warehouse commands (The whole cmd you can read from run_sim script). If you are doing it first time, it will take 2-3 minutes to configure the env. Please, wait.
+Then you can execute it modifying run_sim.sh script with --custom_env=office and --terrain flat commands. If you are doing it first time, it will take 2-3 minutes to configure the env. Please, wait.
 
 
 ## Development
@@ -183,8 +194,12 @@ I have tested it on:
 5. Execute IsaacSim, Go to Window -> Extensions, find STEAMVR INPUT/OUTPUT then enable it and enable AutoLoad. Reopen IsaacSim. Use OpenXR mode.
 6. Enjoy Omniverse in VR mode!
 
+
 ## Thanks
-Special thanks to Leul Tesfaye for his expertise in Orbit lidars and Tamas @tfoldi for contributing to this project.
+Special thanks to 
+1. Leul Tesfaye for his expertise in Orbit lidars;
+2. Tamas @tfoldi for contributing to this project;
+3. @ShaoshuSu for his hardwork in investigating the speed issues with new version of Orbit (IsaacLab 4.0 and 4.1);
 
 
 ## License

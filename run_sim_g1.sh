@@ -35,7 +35,7 @@ source install/setup.bash
 cd ..
 
 eval "$(conda shell.bash hook)"
-conda activate isaaclab
+conda activate orbit
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
 # Run the Python script
