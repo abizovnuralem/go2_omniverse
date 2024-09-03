@@ -98,7 +98,7 @@ Your encouragement fuels our passion and helps us develop our RoadMap further. W
 Together, let's push the boundaries of what's possible with the Unitree Go2/G1 and ROS2!
 
 
-## System requirements
+## System requirements and installation
 You need to install:
 1. Ubuntu 22.04
 2. Nvidia Isaac Sim 2023.1.1
@@ -108,48 +108,35 @@ You need to install:
 
 Full instruction:
 ```
-1. Use this specific IsaacLab repo version: https://github.com/isaac-sim/IsaacLab/releases/tag/v0.3.1
-2. execute in ubuntu terminal:
+After installation of Nvidia Isaac Sim 2023.1.1 and Ros2 Humble:
+
+1. Clone this specific IsaacLab repo version: https://github.com/isaac-sim/IsaacLab/releases/tag/v0.3.1
+2. Execute in ubuntu terminal:
 export ISAACSIM_PATH="${HOME}/.local/share/ov/pkg/isaac-sim-2023.1.1"
 export ISAACSIM_PYTHON_EXE="${ISAACSIM_PATH}/python.sh"
 and also put it inside .bashrc file
 3. Inside the root folder of Orbit repo (https://github.com/isaac-sim/IsaacLab/releases/tag/v0.3.1) execute ln -s ${ISAACSIM_PATH} _isaac_sim
-4. ./orbit.sh --conda
-5. conda activate orbit
-6. sudo apt install cmake build-essential
-7. ./orbit.sh --install
-8. ./orbit.sh --extra rsl_rl
-9. verify the installation using "python source/standalone/tutorials/00_sim/create_empty.py" You should be inside conda env.
+4. Execute ./orbit.sh --conda
+5. Execute conda activate orbit
+6. Execute sudo apt install cmake build-essential
+7. Execute ./orbit.sh --install
+8. Execute ./orbit.sh --extra rsl_rl
+9. Verify the installation using "python source/standalone/tutorials/00_sim/create_empty.py" You should be inside conda env.
 10. You need to check that you have "Isaac Sim Python 2023.1.1 - New Stage*" on the top of the window.
-11. go to the current repo project (this repo)
-12. execute ./run_sim.sh
+11. Clone this repo with git clone https://github.com/abizovnuralem/go2_omniverse/ --recurse-submodules -j8 --depth=1
+12. Copy the config file Unitree_L1.json (located in go2_omniverse/Isaac_sim/Unitree/Unitree_L1.json) for the Unitree L1 LiDAR to the folder IsaacLab-0.3.1/source/data/sensors/lidar/Unitree_L1.json (if the path doesnt exists, create it)
+13. Copy all material files in the isaac-sim-2023.1.1/data/material_files folder to IsaacLab_v0.3.1/source/data/material_files (if the path doesnt exists, create it)
+14. Execute ./run_sim.sh (without activated conda orbit env)
 ```
 
 Some suggestions:
-1. You need to check nvidia-smi, it should work, before installing Isaac Sim (Orbit)
+1. You need to check nvidia-smi, it should work, before installing Isaac Sim
 2. You need to install Miniconda and execute: conda config --set auto_activate_base false
-3. Install Omniverse launcher and then install Isaac Sim (Orbit).
+3. Install Omniverse launcher and then install Isaac Sim.
 4. You need to install ROS2 on your system and configure it:
 
 ```
 https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_ros.html#isaac-sim-app-install-ros
-```
-
-## Downloading the code
-
-To start with the local development environment, clone this repo:
-
-```
-git clone https://github.com/abizovnuralem/go2_omniverse/ --recurse-submodules -j8 --depth=1
-
-```
-
-## Setup the Unitree L1 Lidar:
-
-First, you need to copy files from Isaac Sim folder to your local Isaac Sim installation in order to use Unitree L1 lidar inside Orbit.
-
-```
-1. You need to add Unitree_L1.json to IsaacLab (Orbit) repo folder, where IsaacLab-0.3.1/source/data/sensors/lidar/Unitree/Unitree_L1.json will be the final path (If it doesnt exists, create it)
 ```
 
 ## Usage
