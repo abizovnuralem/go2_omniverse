@@ -39,4 +39,4 @@ conda activate orbit
 export LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
 # Run the Python script
-python main.py --robot_amount 1 --robot g1 --terrain flat
+python main.py --robot_amount 1 --robot go2 --terrain flat
