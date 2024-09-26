@@ -182,6 +182,44 @@ I have tested it on:
 6. Enjoy Omniverse in VR mode!
 
 
+## Troubleshooting:
+
+### The version of Isaac Simulator 2023.1.1 is no longer available on Omniverse Launcher, what should I do? 
+
+1. Go to [Container Installation](https://docs.omniverse.nvidia.com/isaacsim/latest/installation/install_container.html) and follow all the steps in the **Container Deployment** section up to step 5).
+2. Modify the command in step 6) with: 
+```bash
+docker pull nvcr.io/nvidia/isaac-sim:2023.1.1
+```
+3. Now run this command: 
+```bash
+docker run --name isaac-sim --entrypoint bash -it --runtime=nvidia --gpus all -e "ACCEPT_EULA=Y" --rm --network=host \
+    -e "PRIVACY_CONSENT=Y" \
+    -v ~/docker/isaac-sim/cache/kit:/isaac-sim/kit/cache:rw \
+    -v ~/docker/isaac-sim/cache/ov:/root/.cache/ov:rw \
+    -v ~/docker/isaac-sim/cache/pip:/root/.cache/pip:rw \
+    -v ~/docker/isaac-sim/cache/glcache:/root/.cache/nvidia/GLCache:rw \
+    -v ~/docker/isaac-sim/cache/computecache:/root/.nv/ComputeCache:rw \
+    -v ~/docker/isaac-sim/logs:/root/.nvidia-omniverse/logs:rw \
+    -v ~/docker/isaac-sim/data:/root/.local/share/ov/data:rw \
+    -v ~/docker/isaac-sim/documents:/root/Documents:rw \
+    nvcr.io/nvidia/isaac-sim:2023.1.1
+```
+4. Open another terminal and run the command ```bash docker ps``` to find the container's ID.
+5. From the terminal inside the container, run this command to copy the entire Isaac 2023.1.1 folder to a folder on your computer (*I suggest naming it isaac-sim-2023.1.1 so that the setup commands above work*):
+```bash
+docker cp <id_container>:isaac-sim/. <your_local_machine_folder> # absolute path
+```
+6. On your PC, you will have a folder named **isaac-sim-2023.1.1**. Move it to the following path:
+```bash
+.local/share/ov/pkg/
+```
+
+### Could not import 'rosidl_typesupport_c' for package 'go2_interfaces'
+
+If running ```./run_sim.sh``` results in the error **"Could not import 'rosidl_typesupport_c' for package"**, refer to this [thread](https://github.com/ros2/examples/issues/303).
+
+
 ## Thanks
 Special thanks to 
 1. Leul Tesfaye for his expertise in Orbit lidars;
