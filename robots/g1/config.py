@@ -1,3 +1,25 @@
+# Copyright (c) 2024, RoboVerse community
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import omni.isaac.lab.sim as sim_utils
 from omni.isaac.lab.actuators import ImplicitActuatorCfg
@@ -6,7 +28,7 @@ from omni.isaac.lab.assets.articulation import ArticulationCfg
 
 G1_CFG = ArticulationCfg(
     spawn=sim_utils.UsdFileCfg(
-        usd_path="/home/brimo/Desktop/g1/g1_t.usd",
+        usd_path="./robots/g1/g1.usd",
         activate_contact_sensors=True,
         rigid_props=sim_utils.RigidBodyPropertiesCfg(
             disable_gravity=False,
@@ -18,28 +40,24 @@ G1_CFG = ArticulationCfg(
             max_depenetration_velocity=1.0,
         ),
         articulation_props=sim_utils.ArticulationRootPropertiesCfg(
-            enabled_self_collisions=False, solver_position_iteration_count=4, solver_velocity_iteration_count=4
+            enabled_self_collisions=False,
+            solver_position_iteration_count=4,
+            solver_velocity_iteration_count=4,
         ),
     ),
     init_state=ArticulationCfg.InitialStateCfg(
         pos=(0.0, 0.0, 0.70),
         joint_pos={
-            
             ".*_hip_pitch_joint": -0.28,
             ".*_knee_joint": 0.63,
             ".*_ankle_pitch_joint": -0.35,
-
             ".*_elbow_pitch_joint": 0.87,
             "left_shoulder_roll_joint": 0.16,
             "left_shoulder_pitch_joint": 0.35,
-            
             "right_shoulder_roll_joint": -0.16,
             "right_shoulder_pitch_joint": 0.35,
-            
             "left_one_joint": 1.0,
             "right_one_joint": -1.0,
-
-
         },
         joint_vel={".*": 0.0},
     ),
@@ -47,11 +65,11 @@ G1_CFG = ArticulationCfg(
     actuators={
         "legs": ImplicitActuatorCfg(
             joint_names_expr=[
-                ".*_hip_yaw_joint", 
+                ".*_hip_yaw_joint",
                 ".*_hip_roll_joint",
-                 ".*_hip_pitch_joint", 
+                ".*_hip_pitch_joint",
                 ".*_knee_joint",
-                "torso_joint"
+                "torso_joint",
             ],
             effort_limit=300,
             velocity_limit=100.0,
@@ -78,22 +96,10 @@ G1_CFG = ArticulationCfg(
             },
         ),
         "feet": ImplicitActuatorCfg(
-            joint_names_expr=[
-                ".*_ankle_pitch_joint", 
-                ".*_ankle_roll_joint"
-            ],
-            stiffness={
-                ".*_ankle_pitch_joint": 20.0,
-                ".*_ankle_roll_joint": 20.0
-            },
-            damping={
-                ".*_ankle_pitch_joint": 4.0,
-                ".*_ankle_roll_joint": 4.0
-            },
-            armature={
-                ".*_ankle_pitch_joint": 0.1,
-                ".*_ankle_roll_joint": 0.1
-            },
+            joint_names_expr=[".*_ankle_pitch_joint", ".*_ankle_roll_joint"],
+            stiffness={".*_ankle_pitch_joint": 20.0, ".*_ankle_roll_joint": 20.0},
+            damping={".*_ankle_pitch_joint": 4.0, ".*_ankle_roll_joint": 4.0},
+            armature={".*_ankle_pitch_joint": 0.1, ".*_ankle_roll_joint": 0.1},
         ),
         "arms": ImplicitActuatorCfg(
             joint_names_expr=[
@@ -108,7 +114,7 @@ G1_CFG = ArticulationCfg(
                 ".*_four_joint",
                 ".*_zero_joint",
                 ".*_one_joint",
-                ".*_two_joint"
+                ".*_two_joint",
             ],
             effort_limit=300,
             velocity_limit=100.0,

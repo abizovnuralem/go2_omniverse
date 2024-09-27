@@ -1,4 +1,29 @@
+# Copyright (c) 2024, RoboVerse community
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice, this
+#    list of conditions and the following disclaimer.
+#
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
 """Script to play a checkpoint if an RL agent from RSL-RL."""
+
 from __future__ import annotations
 
 
@@ -7,7 +32,7 @@ import argparse
 from omni.isaac.lab.app import AppLauncher
 
 
-import cli_args  
+import cli_args
 import time
 import os
 import threading
@@ -15,16 +40,32 @@ import threading
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
-parser.add_argument("--cpu", action="store_true", default=False, help="Use CPU pipeline.")
+parser.add_argument("--device", type=str, default="cpu", help="Use CPU pipeline.")
 parser.add_argument(
-    "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
+    "--disable_fabric",
+    action="store_true",
+    default=False,
+    help="Disable fabric and use USD I/O operations.",
 )
-parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to simulate.")
-parser.add_argument("--task", type=str, default="Isaac-Velocity-Rough-Unitree-Go2-v0", help="Name of the task.")
-parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
-parser.add_argument("--custom_env", type=str, default="office", help="Setup the environment")
+parser.add_argument(
+    "--num_envs", type=int, default=1, help="Number of environments to simulate."
+)
+parser.add_argument(
+    "--task",
+    type=str,
+    default="Isaac-Velocity-Rough-Unitree-Go2-v0",
+    help="Name of the task.",
+)
+parser.add_argument(
+    "--seed", type=int, default=None, help="Seed used for the environment"
+)
+parser.add_argument(
+    "--custom_env", type=str, default="office", help="Setup the environment"
+)
 parser.add_argument("--robot", type=str, default="go2", help="Setup the robot")
-parser.add_argument("--robot_amount", type=int, default=1, help="Setup the robot amount")
+parser.add_argument(
+    "--robot_amount", type=int, default=1, help="Setup the robot amount"
+)
 
 
 # append RSL-RL cli arguments
@@ -65,22 +106,31 @@ import carb
 from omni.isaac.lab_tasks.utils import get_checkpoint_path
 from omni.isaac.lab_tasks.utils.wrappers.rsl_rl import (
     RslRlOnPolicyRunnerCfg,
-    RslRlVecEnvWrapper
+    RslRlVecEnvWrapper,
 )
 import omni.isaac.lab.sim as sim_utils
 import omni.appwindow
 from rsl_rl.runners import OnPolicyRunner
 
 
-
 import rclpy
-from ros2 import RobotBaseNode, add_camera, add_rtx_lidar, pub_robo_data_ros2
+from ros2 import (
+    RobotBaseNode,
+    add_camera,
+    add_copter_camera,
+    add_rtx_lidar,
+    pub_robo_data_ros2,
+)
 from geometry_msgs.msg import Twist
 
 
 from agent_cfg import unitree_go2_agent_cfg, unitree_g1_agent_cfg
 from custom_rl_env import UnitreeGo2CustomEnvCfg, G1RoughEnvCfg
 import custom_rl_env
+
+from robots.copter.config import CRAZYFLIE_CFG
+from omni.isaac.lab.assets import Articulation
+
 
 from omnigraph import create_front_cam_omnigraph
 
@@ -89,31 +139,31 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
 
     if len(custom_rl_env.base_command) > 0:
         if event.type == carb.input.KeyboardEventType.KEY_PRESS:
-            if event.input.name == 'W':
+            if event.input.name == "W":
                 custom_rl_env.base_command["0"] = [1, 0, 0]
-            if event.input.name == 'S':
+            if event.input.name == "S":
                 custom_rl_env.base_command["0"] = [-1, 0, 0]
-            if event.input.name == 'A':
+            if event.input.name == "A":
                 custom_rl_env.base_command["0"] = [0, 1, 0]
-            if event.input.name == 'D':
+            if event.input.name == "D":
                 custom_rl_env.base_command["0"] = [0, -1, 0]
-            if event.input.name == 'Q':
+            if event.input.name == "Q":
                 custom_rl_env.base_command["0"] = [0, 0, 1]
-            if event.input.name == 'E':
+            if event.input.name == "E":
                 custom_rl_env.base_command["0"] = [0, 0, -1]
 
             if len(custom_rl_env.base_command) > 1:
-                if event.input.name == 'I':
+                if event.input.name == "I":
                     custom_rl_env.base_command["1"] = [1, 0, 0]
-                if event.input.name == 'K':
+                if event.input.name == "K":
                     custom_rl_env.base_command["1"] = [-1, 0, 0]
-                if event.input.name == 'J':
+                if event.input.name == "J":
                     custom_rl_env.base_command["1"] = [0, 1, 0]
-                if event.input.name == 'L':
+                if event.input.name == "L":
                     custom_rl_env.base_command["1"] = [0, -1, 0]
-                if event.input.name == 'U':
+                if event.input.name == "U":
                     custom_rl_env.base_command["1"] = [0, 0, 1]
-                if event.input.name == 'O':
+                if event.input.name == "O":
                     custom_rl_env.base_command["1"] = [0, 0, -1]
         elif event.type == carb.input.KeyboardEventType.KEY_RELEASE:
             for i in range(len(custom_rl_env.base_command)):
@@ -121,17 +171,61 @@ def sub_keyboard_event(event, *args, **kwargs) -> bool:
     return True
 
 
+def move_copter(copter):
+
+    # TODO tmp solution for test
+    if custom_rl_env.base_command["0"] == [0, 0, 0]:
+        copter_move_cmd = torch.tensor(
+            [[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]], device="cuda:0"
+        )
+
+    if custom_rl_env.base_command["0"] == [1, 0, 0]:
+        copter_move_cmd = torch.tensor(
+            [[1.0, 0.0, 0.0, 0.0, 0.0, 0.0]], device="cuda:0"
+        )
+
+    if custom_rl_env.base_command["0"] == [-1, 0, 0]:
+        copter_move_cmd = torch.tensor(
+            [[-1.0, 0.0, 0.0, 0.0, 0.0, 0.0]], device="cuda:0"
+        )
+
+    if custom_rl_env.base_command["0"] == [0, 1, 0]:
+        copter_move_cmd = torch.tensor(
+            [[0.0, 1.0, 0.0, 0.0, 0.0, 0.0]], device="cuda:0"
+        )
+
+    if custom_rl_env.base_command["0"] == [0, -1, 0]:
+        copter_move_cmd = torch.tensor(
+            [[0.0, -1.0, 0.0, 0.0, 0.0, 0.0]], device="cuda:0"
+        )
+
+    if custom_rl_env.base_command["0"] == [0, 0, 1]:
+        copter_move_cmd = torch.tensor(
+            [[0.0, 0.0, 1.0, 0.0, 0.0, 0.0]], device="cuda:0"
+        )
+
+    if custom_rl_env.base_command["0"] == [0, 0, -1]:
+        copter_move_cmd = torch.tensor(
+            [[0.0, 0.0, -1.0, 0.0, 0.0, 0.0]], device="cuda:0"
+        )
+
+    copter.write_root_velocity_to_sim(copter_move_cmd)
+    copter.write_data_to_sim()
+
+
 def setup_custom_env():
     try:
-        if (args_cli.custom_env == "warehouse"):
+        if args_cli.custom_env == "warehouse":
             cfg_scene = sim_utils.UsdFileCfg(usd_path="./envs/warehouse.usd")
             cfg_scene.func("/World/warehouse", cfg_scene, translation=(0.0, 0.0, 0.0))
 
-        if (args_cli.custom_env == "office"):
+        if args_cli.custom_env == "office":
             cfg_scene = sim_utils.UsdFileCfg(usd_path="./envs/office.usd")
             cfg_scene.func("/World/office", cfg_scene, translation=(0.0, 0.0, 0.0))
     except:
-        print("Error loading custom environment. You should download custom envs folder from: https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing")
+        print(
+            "Error loading custom environment. You should download custom envs folder from: https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing"
+        )
 
 
 def cmd_vel_cb(msg, num_robot):
@@ -141,22 +235,24 @@ def cmd_vel_cb(msg, num_robot):
     custom_rl_env.base_command[str(num_robot)] = [x, y, z]
 
 
-
 def add_cmd_sub(num_envs):
-    node_test = rclpy.create_node('position_velocity_publisher')
+    node_test = rclpy.create_node("position_velocity_publisher")
     for i in range(num_envs):
-        node_test.create_subscription(Twist, f'robot{i}/cmd_vel', lambda msg, i=i: cmd_vel_cb(msg, str(i)), 10)
+        node_test.create_subscription(
+            Twist, f"robot{i}/cmd_vel", lambda msg, i=i: cmd_vel_cb(msg, str(i)), 10
+        )
     # Spin in a separate thread
     thread = threading.Thread(target=rclpy.spin, args=(node_test,), daemon=True)
     thread.start()
 
 
-
 def specify_cmd_for_robots(numv_envs):
     for i in range(numv_envs):
         custom_rl_env.base_command[str(i)] = [0, 0, 0]
+
+
 def run_sim():
-    
+
     # acquire input interface
     _input = carb.input.acquire_input_interface()
     _appwindow = omni.appwindow.get_default_app_window()
@@ -165,19 +261,27 @@ def run_sim():
 
     """Play with RSL-RL agent."""
     # parse configuration
-    
+
     env_cfg = UnitreeGo2CustomEnvCfg()
-    
+
     if args_cli.robot == "g1":
         env_cfg = G1RoughEnvCfg()
 
-    # add N robots to env 
+    copter_cfg = CRAZYFLIE_CFG
+    copter_cfg.spawn.func(
+        "/World/Crazyflie/Robot_1", copter_cfg.spawn, translation=(1.5, 0.5, 2.42)
+    )
+
+    # # create handles for the robots
+    copter = Articulation(copter_cfg.replace(prim_path="/World/Crazyflie/Robot.*"))
+
+    # add N robots to env
     env_cfg.scene.num_envs = args_cli.robot_amount
 
     # create ros2 camera stream omnigraph
     for i in range(env_cfg.scene.num_envs):
         create_front_cam_omnigraph(i)
-        
+
     specify_cmd_for_robots(env_cfg.scene.num_envs)
 
     agent_cfg: RslRlOnPolicyRunnerCfg = unitree_go2_agent_cfg
@@ -189,16 +293,21 @@ def run_sim():
     env = gym.make(args_cli.task, cfg=env_cfg)
     # wrap around environment for rsl-rl
     env = RslRlVecEnvWrapper(env)
+
     # specify directory for logging experiments
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg["experiment_name"])
     log_root_path = os.path.abspath(log_root_path)
     print(f"[INFO] Loading experiment from directory: {log_root_path}")
 
-    resume_path = get_checkpoint_path(log_root_path, agent_cfg["load_run"], agent_cfg["load_checkpoint"])
+    resume_path = get_checkpoint_path(
+        log_root_path, agent_cfg["load_run"], agent_cfg["load_checkpoint"]
+    )
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
     # load previously trained model
-    ppo_runner = OnPolicyRunner(env, agent_cfg, log_dir=None, device=agent_cfg["device"])
+    ppo_runner = OnPolicyRunner(
+        env, agent_cfg, log_dir=None, device=agent_cfg["device"]
+    )
     ppo_runner.load(resume_path)
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
@@ -215,9 +324,12 @@ def run_sim():
 
     annotator_lst = add_rtx_lidar(env_cfg.scene.num_envs, args_cli.robot, False)
     add_camera(env_cfg.scene.num_envs, args_cli.robot)
+    add_copter_camera()
+
     setup_custom_env()
-    
+
     start_time = time.time()
+
     # simulate environment
     while simulation_app.is_running():
         # run everything in inference mode
@@ -226,5 +338,14 @@ def run_sim():
             actions = policy(obs)
             # env stepping
             obs, _, _, _ = env.step(actions)
-            pub_robo_data_ros2(args_cli.robot, env_cfg.scene.num_envs, base_node, env, annotator_lst, start_time)
+            pub_robo_data_ros2(
+                args_cli.robot,
+                env_cfg.scene.num_envs,
+                base_node,
+                env,
+                annotator_lst,
+                start_time,
+            )
+            move_copter(copter)
+
     env.close()

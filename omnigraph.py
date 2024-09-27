@@ -41,23 +41,38 @@ def create_front_cam_omnigraph(robot_num):
         {
             keys.CREATE_NODES: [
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("IsaacCreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
+                (
+                    "IsaacCreateRenderProduct",
+                    "omni.isaac.core_nodes.IsaacCreateRenderProduct",
+                ),
                 ("ROS2CameraHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
             ],
-
             keys.SET_VALUES: [
-                ("IsaacCreateRenderProduct.inputs:cameraPrim", f"/World/envs/env_{robot_num}/Robot/base/front_cam"),
+                (
+                    "IsaacCreateRenderProduct.inputs:cameraPrim",
+                    f"/World/envs/env_{robot_num}/Robot/base/front_cam",
+                ),
                 ("IsaacCreateRenderProduct.inputs:enabled", True),
                 ("ROS2CameraHelper.inputs:type", "rgb"),
-                ("ROS2CameraHelper.inputs:topicName", f"robot{robot_num}/front_cam/rgb"),
+                (
+                    "ROS2CameraHelper.inputs:topicName",
+                    f"robot{robot_num}/front_cam/rgb",
+                ),
                 ("ROS2CameraHelper.inputs:frameId", f"robot{robot_num}"),
             ],
-
             keys.CONNECT: [
-                ("OnPlaybackTick.outputs:tick", "IsaacCreateRenderProduct.inputs:execIn"),
-                ("IsaacCreateRenderProduct.outputs:execOut", "ROS2CameraHelper.inputs:execIn"),
-                ("IsaacCreateRenderProduct.outputs:renderProductPath", "ROS2CameraHelper.inputs:renderProductPath"),
+                (
+                    "OnPlaybackTick.outputs:tick",
+                    "IsaacCreateRenderProduct.inputs:execIn",
+                ),
+                (
+                    "IsaacCreateRenderProduct.outputs:execOut",
+                    "ROS2CameraHelper.inputs:execIn",
+                ),
+                (
+                    "IsaacCreateRenderProduct.outputs:renderProductPath",
+                    "ROS2CameraHelper.inputs:renderProductPath",
+                ),
             ],
-
         },
     )

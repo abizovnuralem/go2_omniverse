@@ -6,3 +6,5 @@ __pycache__
 .env
 IsaacSim-ros_workspaces/build_ws
 envs
+IsaacLab-0.3.1
+IsaacLab-1.0.0
