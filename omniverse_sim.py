@@ -267,13 +267,14 @@ def run_sim():
     if args_cli.robot == "g1":
         env_cfg = G1RoughEnvCfg()
 
-    copter_cfg = CRAZYFLIE_CFG
-    copter_cfg.spawn.func(
-        "/World/Crazyflie/Robot_1", copter_cfg.spawn, translation=(1.5, 0.5, 2.42)
-    )
+    # TODO need to think about better copter integration.
+    # copter_cfg = CRAZYFLIE_CFG
+    # copter_cfg.spawn.func(
+    #     "/World/Crazyflie/Robot_1", copter_cfg.spawn, translation=(1.5, 0.5, 2.42)
+    # )
 
     # # create handles for the robots
-    copter = Articulation(copter_cfg.replace(prim_path="/World/Crazyflie/Robot.*"))
+    # copter = Articulation(copter_cfg.replace(prim_path="/World/Crazyflie/Robot.*"))
 
     # add N robots to env
     env_cfg.scene.num_envs = args_cli.robot_amount
@@ -346,6 +347,6 @@ def run_sim():
                 annotator_lst,
                 start_time,
             )
-            move_copter(copter)
+            # move_copter(copter)
 
     env.close()

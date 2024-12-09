@@ -8,7 +8,7 @@
 [![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/22.04/)
 [![License](https://img.shields.io/badge/license-BSD--2-yellow.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
-We are thrilled to announce that the Unitree Go2/G1 robot has now been integrated with the Nvidia Isaac Sim 4.0 (Isaac Lab), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
+We are thrilled to announce that the Unitree Go2/G1 robot has now been integrated with the Nvidia Isaac Sim 4.2.0 (Isaac Lab), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
 
 Get ready to take your research to the next level with this powerful new resource at your fingertips!
 
@@ -101,20 +101,20 @@ Together, let's push the boundaries of what's possible with the Unitree Go2/G1 a
 ## System requirements
 You need to install:
 1. Ubuntu 22.04
-2. Nvidia Isaac Sim 4.0
+2. Nvidia Isaac Sim 4.2.0
 3. Nvidia Isaac Lab
 4. Ros2 Humble
 
 
 Full instruction:
 ```
-https://isaac-sim.github.io/IsaacLab/source/setup/installation/binaries_installation.html
+https://isaac-sim.github.io/IsaacLab/main/source/setup/installation/index.html
 ```
 
 Some suggestions:
-1. You need to check nvidia-smi, it should work, before installing Isaac Sim 4.0
+1. You need to check nvidia-smi, it should work, before installing Isaac Sim 4.2.0
 2. You need to install Miniconda and execute: conda config --set auto_activate_base false
-3. Install Omniverse launcher and then install Isaac Sim 4.0.
+3. Install Omniverse launcher and then install Isaac Sim 4.2.0
 4. Create conda env then activate it, also execute ./isaaclab.sh --install 
 Also, you need to install ROS2 on your system and configure it:
 
