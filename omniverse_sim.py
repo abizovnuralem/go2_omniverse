@@ -29,7 +29,7 @@ from __future__ import annotations
 
 """Launch Isaac Sim Simulator first."""
 import argparse
-from omni.isaac.lab.app import AppLauncher
+from isaaclab.app import AppLauncher
 
 
 import cli_args
@@ -40,7 +40,7 @@ import threading
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
-parser.add_argument("--device", type=str, default="cpu", help="Use CPU pipeline.")
+# parser.add_argument("--device", type=str, default="cpu", help="Use CPU pipeline.")
 parser.add_argument(
     "--disable_fabric",
     action="store_true",
@@ -86,7 +86,7 @@ import omni
 
 
 ext_manager = omni.kit.app.get_app().get_extension_manager()
-ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
+ext_manager.set_extension_enabled_immediate("isaacsim.ros2.bridge", True)
 
 # FOR VR SUPPORT
 # ext_manager.set_extension_enabled_immediate("omni.kit.xr.core", True)
@@ -103,12 +103,12 @@ import torch
 import carb
 
 
-from omni.isaac.lab_tasks.utils import get_checkpoint_path
-from omni.isaac.lab_tasks.utils.wrappers.rsl_rl import (
+from isaaclab_tasks.utils import get_checkpoint_path
+from isaaclab_rl.rsl_rl import (
     RslRlOnPolicyRunnerCfg,
     RslRlVecEnvWrapper,
 )
-import omni.isaac.lab.sim as sim_utils
+import isaaclab.sim as sim_utils
 import omni.appwindow
 from rsl_rl.runners import OnPolicyRunner
 
@@ -129,7 +129,7 @@ from custom_rl_env import UnitreeGo2CustomEnvCfg, G1RoughEnvCfg
 import custom_rl_env
 
 from robots.copter.config import CRAZYFLIE_CFG
-from omni.isaac.lab.assets import Articulation
+from isaaclab.assets import Articulation
 
 
 from omnigraph import create_front_cam_omnigraph

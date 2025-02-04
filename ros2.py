@@ -37,12 +37,13 @@ from sensor_msgs.msg import PointCloud2, PointField, Imu
 from sensor_msgs_py import point_cloud2
 
 
-from omni.isaac.lab.sensors import CameraCfg, Camera
-from omni.isaac.sensor import LidarRtx
+from isaaclab.sensors import CameraCfg, Camera
+import omni.kit.commands
 import omni.replicator.core as rep
 from scipy.spatial.transform import Rotation
-import omni.isaac.lab.sim as sim_utils
+import isaaclab.sim as sim_utils
 
+from pxr import Gf
 
 def update_meshes_for_cloud2(position_array, origin, rot):
 
@@ -69,26 +70,29 @@ def add_rtx_lidar(num_envs, robot_type, debug=False):
             )
 
         else:
-            lidar_sensor = LidarRtx(
-                f"/World/envs/env_{i}/Robot/base/lidar_sensor",
-                rotation_frequency=200,
-                pulse_time=1,
-                translation=(0.0, 0, 0.4),
-                orientation=(1.0, 0.0, 0.0, 0.0),
-                config_file_name="Unitree_L1",
+            _, lidar_sensor = omni.kit.commands.execute(
+                "IsaacSensorCreateRtxLidar",
+                path="/World/envs/env_0/Robot/base/lidar_sensor",
+                parent=None,
+                translation=(0.0, 0.0, 0.4),
+                orientation=Gf.Quatd(1.0, 0.0, 0.0, 0.0),
+                config="Unitree_L1",
             )
+
+        lidar_texture = rep.create.render_product(lidar_sensor.GetPath(), [1, 1], name="UnitreeL1")
 
         if debug:
             # Create the debug draw pipeline in the post process graph
             writer = rep.writers.get("RtxLidar" + "DebugDrawPointCloudBuffer")
-            writer.attach([lidar_sensor.get_render_product_path()])
+            writer.attach([lidar_texture])
 
         annotator = rep.AnnotatorRegistry.get_annotator(
             "RtxSensorCpuIsaacCreateRTXLidarScanBuffer"
         )
-        annotator.attach(lidar_sensor.get_render_product_path())
+        annotator.attach(lidar_texture)
         annotator_lst.append(annotator)
     return annotator_lst
+
 
 
 def add_camera(num_envs, robot_type):
