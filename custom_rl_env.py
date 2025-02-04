@@ -28,25 +28,25 @@ from dataclasses import MISSING
 from typing import Literal
 
 
-from omni.isaac.lab.envs import ManagerBasedRLEnvCfg
-from omni.isaac.lab.utils import configclass
+from isaaclab.envs import ManagerBasedRLEnvCfg
+from isaaclab.utils import configclass
 
-import omni.isaac.lab.sim as sim_utils
-from omni.isaac.lab.assets import ArticulationCfg, AssetBaseCfg
-from omni.isaac.lab.scene import InteractiveSceneCfg
-from omni.isaac.lab.sensors import ContactSensorCfg, RayCasterCfg, patterns
-from omni.isaac.lab.terrains import TerrainImporterCfg
-from omni.isaac.lab.utils import configclass
-from omni.isaac.lab_assets.unitree import UNITREE_GO2_CFG
-from omni.isaac.lab.managers import EventTermCfg as EventTerm
-from omni.isaac.lab.managers import ObservationGroupCfg as ObsGroup
-from omni.isaac.lab.managers import ObservationTermCfg as ObsTerm
-from omni.isaac.lab.managers import RewardTermCfg as RewTerm
-from omni.isaac.lab.managers import SceneEntityCfg
-from omni.isaac.lab.managers import TerminationTermCfg as DoneTerm
-from omni.isaac.lab.utils import configclass
-from omni.isaac.lab.utils.noise import AdditiveUniformNoiseCfg as Unoise
-import omni.isaac.lab_tasks.manager_based.locomotion.velocity.mdp as mdp
+import isaaclab.sim as sim_utils
+from isaaclab.assets import ArticulationCfg, AssetBaseCfg
+from isaaclab.scene import InteractiveSceneCfg
+from isaaclab.sensors import ContactSensorCfg, RayCasterCfg, patterns
+from isaaclab.terrains import TerrainImporterCfg
+from isaaclab.utils import configclass
+from isaaclab_assets.robots.unitree import UNITREE_GO2_CFG
+from isaaclab.managers import EventTermCfg as EventTerm
+from isaaclab.managers import ObservationGroupCfg as ObsGroup
+from isaaclab.managers import ObservationTermCfg as ObsTerm
+from isaaclab.managers import RewardTermCfg as RewTerm
+from isaaclab.managers import SceneEntityCfg
+from isaaclab.managers import TerminationTermCfg as DoneTerm
+from isaaclab.utils import configclass
+from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 
 
 from robots.g1.config import G1_CFG
@@ -58,7 +58,8 @@ base_command = {}
 def constant_commands(env: ManagerBasedRLEnvCfg) -> torch.Tensor:
     global base_command
     """The generated command from the command generator."""
-    tensor_lst = torch.tensor([0, 0, 0], device=env.device).repeat(env.num_envs, 1)
+    # tensor_lst = torch.tensor([0, 0, 0], device=env.device).repeat(env.num_envs, 1)
+    tensor_lst = torch.tensor([0.0, 0.0, 0.0], dtype=torch.float32, device=env.device).repeat(env.num_envs, 1)
     for i in range(env.num_envs):
         tensor_lst[i] = torch.tensor(base_command[str(i)], device=env.device)
     return tensor_lst
