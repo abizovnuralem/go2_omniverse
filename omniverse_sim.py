@@ -22,6 +22,9 @@ parser.add_argument("--custom_env", type=str, default="office", help="Setup the 
 parser.add_argument("--robot", type=str, default="go2", help="Setup the robot")
 parser.add_argument("--terrain", type=str, default="rough", help="Setup the robot")
 parser.add_argument("--robot_amount", type=int, default=1, help="Setup the robot amount")
+parser.add_argument("--twinbot", action="store_true", default=False,
+                    help="Digital-twin mode: drive sim joints from real Go2 via /real_dog/joint_states "
+                         "(requires twinbot_bridge.py running on the Jetson)")
 
 
 # append RSL-RL cli arguments
@@ -127,6 +130,8 @@ import custom_rl_env
 _ckpt("import omnigraph")
 from omnigraph import create_front_cam_omnigraph
 _ckpt("all imports complete")
+
+# twinbot import is deferred until after rclpy.init() in run_sim()
 
 
 def _load_mlp_policy(ckpt_path: str, hidden_dims, activation_name: str, device: str):
@@ -298,6 +303,12 @@ def run_sim():
     add_cmd_sub(env_cfg.scene.num_envs)
     _ckpt("ROS2 publishers up")
 
+    twin = None
+    if args_cli.twinbot:
+        from twinbot import TwinbotSubscriber
+        twin = TwinbotSubscriber(env)
+        _ckpt("TwinbotSubscriber ready — waiting for /real_dog/joint_states")
+
     # Lidar disabled pending Unitree_L1.json update for Isaac Sim 5.0 schema.
     annotator_lst = []
     try:
@@ -312,15 +323,16 @@ def run_sim():
     _ckpt("entering main loop")
 
     setup_custom_env()
-    
+
     start_time = time.time()
     # simulate environment
     while simulation_app.is_running():
-        # run everything in inference mode
         with torch.inference_mode():
-            # agent stepping
-            actions = policy(obs)
-            # env stepping
+            if twin is not None:
+                twin_actions = twin.actions(device)
+                actions = twin_actions if twin_actions is not None else policy(obs)
+            else:
+                actions = policy(obs)
             obs, _, _, _ = env.step(actions)
             pub_robo_data_ros2(args_cli.robot, env_cfg.scene.num_envs, base_node, env, annotator_lst, start_time)
     env.close()
