@@ -31,18 +31,17 @@ def create_front_cam_omnigraph(robot_num):
 
     keys = og.Controller.Keys
 
-    graph_path = f"/ROS_" + f"front_cam{robot_num}"
+    graph_path = f"/ROS_front_cam{robot_num}"
     og.Controller.edit(
         {
             "graph_path": graph_path,
             "evaluator_name": "execution",
-            "pipeline_stage": og.GraphPipelineStage.GRAPH_PIPELINE_STAGE_SIMULATION,
         },
         {
             keys.CREATE_NODES: [
                 ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
-                ("IsaacCreateRenderProduct", "omni.isaac.core_nodes.IsaacCreateRenderProduct"),
-                ("ROS2CameraHelper", "omni.isaac.ros2_bridge.ROS2CameraHelper"),
+                ("IsaacCreateRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+                ("ROS2CameraHelper", "isaacsim.ros2.bridge.ROS2CameraHelper"),
             ],
 
             keys.SET_VALUES: [

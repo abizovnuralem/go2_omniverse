@@ -23,7 +23,7 @@
 
 
 from terrain_generator_cfg import TerrainGeneratorCfg
-import omni.isaac.orbit.terrains as terrain_gen
+import isaaclab.terrains as terrain_gen
 
 
 ROUGH_TERRAINS_CFG = TerrainGeneratorCfg(

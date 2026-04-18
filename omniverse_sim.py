@@ -4,7 +4,7 @@ from __future__ import annotations
 
 """Launch Isaac Sim Simulator first."""
 import argparse
-from omni.isaac.orbit.app import AppLauncher
+from isaaclab.app import AppLauncher
 
 
 import cli_args  
@@ -15,10 +15,6 @@ import threading
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Train an RL agent with RSL-RL.")
-parser.add_argument("--cpu", action="store_true", default=False, help="Use CPU pipeline.")
-parser.add_argument(
-    "--disable_fabric", action="store_true", default=False, help="Disable fabric and use USD I/O operations."
-)
 parser.add_argument("--num_envs", type=int, default=1, help="Number of environments to simulate.")
 parser.add_argument("--task", type=str, default="Isaac-Velocity-Rough-Unitree-Go2-v0", help="Name of the task.")
 parser.add_argument("--seed", type=int, default=None, help="Seed used for the environment")
@@ -46,7 +42,15 @@ import omni
 
 
 ext_manager = omni.kit.app.get_app().get_extension_manager()
-ext_manager.set_extension_enabled_immediate("omni.isaac.ros2_bridge", True)
+# Required OmniGraph action-graph extensions (not pulled in by the headless kit by default).
+for _ext in (
+    "omni.graph.core",
+    "omni.graph.action",
+    "omni.graph.nodes",
+    "isaacsim.core.nodes",
+    "isaacsim.ros2.bridge",
+):
+    ext_manager.set_extension_enabled_immediate(_ext, True)
 
 # FOR VR SUPPORT
 # ext_manager.set_extension_enabled_immediate("omni.kit.xr.core", True)
@@ -63,14 +67,10 @@ import torch
 import carb
 
 
-from omni.isaac.orbit_tasks.utils import get_checkpoint_path
-from omni.isaac.orbit_tasks.utils.wrappers.rsl_rl import (
-    RslRlOnPolicyRunnerCfg,
-    RslRlVecEnvWrapper
-)
-import omni.isaac.orbit.sim as sim_utils
+from isaaclab_tasks.utils.parse_cfg import get_checkpoint_path
+from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
+import isaaclab.sim as sim_utils
 import omni.appwindow
-from rsl_rl.runners import OnPolicyRunner
 
 
 
@@ -84,6 +84,39 @@ from custom_rl_env import UnitreeGo2CustomEnvCfg, G1RoughEnvCfg
 import custom_rl_env
 
 from omnigraph import create_front_cam_omnigraph
+
+
+def _load_mlp_policy(ckpt_path: str, hidden_dims, activation_name: str, device: str):
+    """Load an MLP actor from a legacy rsl_rl ActorCritic checkpoint.
+
+    The installed rsl_rl-lib (5.x) has a different config/load API than the one
+    used to train the shipped checkpoints (pre-2025). The checkpoint only
+    contains MLP weights for actor / critic plus a learned std, so we rebuild a
+    matching nn.Sequential for inference and skip the runner entirely.
+    """
+    import torch.nn as nn
+
+    state = torch.load(ckpt_path, map_location=device, weights_only=False)
+    sd = state["model_state_dict"]
+
+    # Derive input dim from first layer
+    actor_in = sd["actor.0.weight"].shape[1]
+    actor_out = sd["actor.6.weight"].shape[0]
+
+    activation = {"elu": nn.ELU, "relu": nn.ReLU, "tanh": nn.Tanh}[activation_name.lower()]
+
+    layers = []
+    dims = [actor_in, *hidden_dims]
+    for i in range(len(hidden_dims)):
+        layers.append(nn.Linear(dims[i], dims[i + 1]))
+        layers.append(activation())
+    layers.append(nn.Linear(hidden_dims[-1], actor_out))
+    actor = nn.Sequential(*layers)
+
+    actor_sd = {k[len("actor."):]: v for k, v in sd.items() if k.startswith("actor.")}
+    actor.load_state_dict(actor_sd)
+    actor.to(device).eval()
+    return actor, actor_in, actor_out
 
 
 def sub_keyboard_event(event, *args, **kwargs) -> bool:
@@ -172,19 +205,15 @@ def run_sim():
     if args_cli.robot == "g1":
         env_cfg = G1RoughEnvCfg()
 
-    # add N robots to env 
+    # add N robots to env
     env_cfg.scene.num_envs = args_cli.robot_amount
 
-    # create ros2 camera stream omnigraph
-    for i in range(env_cfg.scene.num_envs):
-        create_front_cam_omnigraph(i)
-        
     specify_cmd_for_robots(env_cfg.scene.num_envs)
 
-    agent_cfg: RslRlOnPolicyRunnerCfg = unitree_go2_agent_cfg
+    agent_cfg = unitree_go2_agent_cfg
 
     if args_cli.robot == "g1":
-        agent_cfg: RslRlOnPolicyRunnerCfg = unitree_g1_agent_cfg
+        agent_cfg = unitree_g1_agent_cfg
 
     # create isaac environment
     env = gym.make(args_cli.task, cfg=env_cfg)
@@ -198,24 +227,35 @@ def run_sim():
     resume_path = get_checkpoint_path(log_root_path, agent_cfg["load_run"], agent_cfg["load_checkpoint"])
     print(f"[INFO]: Loading model checkpoint from: {resume_path}")
 
-    # load previously trained model
-    ppo_runner = OnPolicyRunner(env, agent_cfg, log_dir=None, device=agent_cfg["device"])
-    ppo_runner.load(resume_path)
-    print(f"[INFO]: Loading model checkpoint from: {resume_path}")
+    # Legacy checkpoint — build a matching MLP for inference (see helper above).
+    device = str(env.unwrapped.device)
+    actor, _, _ = _load_mlp_policy(
+        resume_path,
+        hidden_dims=agent_cfg["policy"]["actor_hidden_dims"],
+        activation_name=agent_cfg["policy"]["activation"],
+        device=device,
+    )
 
-    # obtain the trained policy for inference
-    policy = ppo_runner.get_inference_policy(device=env.unwrapped.device)
+    def policy(obs_dict):
+        obs_tensor = obs_dict["policy"] if hasattr(obs_dict, "__getitem__") and "policy" in obs_dict else obs_dict
+        return actor(obs_tensor)
 
     # reset environment
-    obs, _ = env.get_observations()
+    obs = env.get_observations()
 
     # initialize ROS2 node
     rclpy.init()
     base_node = RobotBaseNode(env_cfg.scene.num_envs)
     add_cmd_sub(env_cfg.scene.num_envs)
 
-    annotator_lst = add_rtx_lidar(env_cfg.scene.num_envs, args_cli.robot, False)
+    # Lidar disabled pending Unitree_L1.json update for Isaac Sim 5.0 schema.
+    annotator_lst = []
     add_camera(env_cfg.scene.num_envs, args_cli.robot)
+
+    # ROS 2 camera stream omnigraph — created after the stage/robot prim is in place
+    for i in range(env_cfg.scene.num_envs):
+        create_front_cam_omnigraph(i)
+
     setup_custom_env()
     
     start_time = time.time()

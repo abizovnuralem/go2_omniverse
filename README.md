@@ -3,8 +3,8 @@
 
 # Welcome to the Unitree Go2/G1 Digital Twins Project!
 
-[![IsaacSim](https://img.shields.io/badge/IsaacSim-orbit-gold.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
-[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
+[![IsaacSim](https://img.shields.io/badge/IsaacSim-orbit%20%7C%205.0-gold.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
 [![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/22.04/)
 [![License](https://img.shields.io/badge/license-BSD--2-yellow.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
@@ -107,7 +107,24 @@ If your system is not sufficient for Isaac Sim or Isaac Lab etc., this is where 
 If you would like to get more detailed information about Robolaunch web platform payments or anything else, contact us!
 
 ## System requirements and installation
-Whether you're running locally or in the cloud, you'll need to install:
+
+There are now two supported tracks:
+
+**Track A — original, Humble-based (Ubuntu 22.04, Isaac Sim 2023.1.1, Orbit 0.3.0)**
+
+This is the path the repo was originally designed for. Instructions below are unchanged.
+
+**Track B — experimental, Jazzy-based (Ubuntu 24.04, Isaac Sim 5.0, IsaacLab 0.54.3)**
+
+A pip-into-venv setup that uses the ROS 2 Jazzy runtime **bundled inside**
+Isaac Sim's `isaacsim.ros2.bridge` extension, rather than a system
+`/opt/ros/jazzy` install. See [`JAZZY.md`](./JAZZY.md) for the full
+rationale (including why system Jazzy's Python 3.12 is not compatible with
+Isaac Sim 5.0's Python 3.11), setup, and what is / is not validated.
+`./run_sim.sh` and `./run_sim_g1.sh` are the launchers for this track; they
+no longer require `conda activate orbit`.
+
+### Track A requirements
 1. Ubuntu 22.04
 2. Nvidia Isaac Sim 2023.1.1
 3. Nvidia Orbit 0.3.0
