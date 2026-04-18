@@ -105,16 +105,16 @@ def add_camera(num_envs, robot_type):
 
 def pub_robo_data_ros2(robot_type, num_envs, base_node, env, annotator_lst, start_time):
     for i in range(num_envs):
-        base_node.publish_joints(env.env.scene["robot"].data.joint_names, env.env.scene["robot"].data.joint_pos[i], i)
-        base_node.publish_odom(env.env.scene["robot"].data.root_state_w[i, :3], env.env.scene["robot"].data.root_state_w[i, 3:7], i)
-        base_node.publish_imu(env.env.scene["robot"].data.root_state_w[i, 3:7], env.env.scene["robot"].data.root_lin_vel_b[i, :], env.env.scene["robot"].data.root_ang_vel_b[i, :], i)
+        base_node.publish_joints(env.unwrapped.scene["robot"].data.joint_names, env.unwrapped.scene["robot"].data.joint_pos[i], i)
+        base_node.publish_odom(env.unwrapped.scene["robot"].data.root_state_w[i, :3], env.unwrapped.scene["robot"].data.root_state_w[i, 3:7], i)
+        base_node.publish_imu(env.unwrapped.scene["robot"].data.root_state_w[i, 3:7], env.unwrapped.scene["robot"].data.root_lin_vel_b[i, :], env.unwrapped.scene["robot"].data.root_ang_vel_b[i, :], i)
 
         if robot_type == "go2":
             base_node.publish_robot_state([
-                env.env.scene["contact_forces"].data.net_forces_w[i][4][2],
-                env.env.scene["contact_forces"].data.net_forces_w[i][8][2],
-                env.env.scene["contact_forces"].data.net_forces_w[i][14][2],
-                env.env.scene["contact_forces"].data.net_forces_w[i][18][2]
+                env.unwrapped.scene["contact_forces"].data.net_forces_w[i][4][2],
+                env.unwrapped.scene["contact_forces"].data.net_forces_w[i][8][2],
+                env.unwrapped.scene["contact_forces"].data.net_forces_w[i][14][2],
+                env.unwrapped.scene["contact_forces"].data.net_forces_w[i][18][2]
             ], i)
 
         try:
@@ -122,8 +122,8 @@ def pub_robo_data_ros2(robot_type, num_envs, base_node, env, annotator_lst, star
                 for j in range(num_envs):
                     data = annotator_lst[j].get_data()
                     point_cloud = update_meshes_for_cloud2(
-                        data['data'], env.env.scene["robot"].data.root_state_w[j, :3],
-                        env.env.scene["robot"].data.root_state_w[j, 3:7]
+                        data['data'], env.unwrapped.scene["robot"].data.root_state_w[j, :3],
+                        env.unwrapped.scene["robot"].data.root_state_w[j, 3:7]
                     )
                     base_node.publish_lidar(point_cloud, j)
                 start_time = time.time()

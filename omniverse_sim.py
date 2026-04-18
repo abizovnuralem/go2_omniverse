@@ -33,24 +33,56 @@ AppLauncher.add_app_launcher_args(parser)
 args_cli = parser.parse_args()
 
 
+def _ckpt(msg: str):
+    print(f"[go2_omniverse] {time.strftime('%H:%M:%S')} {msg}", flush=True)
+
+
+_ckpt("AppLauncher: constructing...")
 # launch omniverse app
 app_launcher = AppLauncher(args_cli)
 simulation_app = app_launcher.app
+_ckpt("AppLauncher: ready")
 
 
 import omni
+_ckpt("import omni: ok")
 
 
 ext_manager = omni.kit.app.get_app().get_extension_manager()
-# Required OmniGraph action-graph extensions (not pulled in by the headless kit by default).
-for _ext in (
+# Required OmniGraph + ROS 2 bridge extensions. We use the non-immediate
+# set_extension_enabled + simulation_app.update() pump: set_extension_enabled_immediate
+# was observed to deadlock on isaacsim.core.nodes on Isaac Sim 5.0 / Ubuntu 24.04.
+# isaacsim.ros2.bridge depends on isaacsim.core.nodes so enabling the bridge
+# transitively enables the nodes extension.
+# NOTE: we deliberately do NOT enable `isaacsim.ros2.bridge`. That extension
+# loads its own in-process rcl_interfaces typesupport which conflicts with the
+# rclpy we use from Python and triggers a ParameterEvent assertion. Since this
+# project publishes ROS 2 data through rclpy from omniverse_sim.py directly
+# (not via OmniGraph ROS2Helper nodes), we only need the OmniGraph core
+# extensions for the action-graph based camera stream.
+_required_exts = (
     "omni.graph.core",
     "omni.graph.action",
     "omni.graph.nodes",
-    "isaacsim.core.nodes",
-    "isaacsim.ros2.bridge",
-):
-    ext_manager.set_extension_enabled_immediate(_ext, True)
+    # Needed because ros2.py imports isaacsim.sensors.rtx.LidarRtx. This is
+    # transitively enabled by isaacsim.ros2.bridge, but we don't enable the
+    # bridge (see note above).
+    "isaacsim.sensors.rtx",
+)
+for _ext in _required_exts:
+    _ckpt(f"requesting extension: {_ext}")
+    ext_manager.set_extension_enabled(_ext, True)
+
+# Pump frames until all requested extensions are actually enabled (or give up).
+_t0 = time.time()
+while time.time() - _t0 < 120:
+    simulation_app.update()
+    pending = [e for e in _required_exts if not ext_manager.is_extension_enabled(e)]
+    if not pending:
+        break
+    time.sleep(0.05)
+still_pending = [e for e in _required_exts if not ext_manager.is_extension_enabled(e)]
+_ckpt(f"extensions enabled in {time.time()-_t0:.2f}s (still_pending={still_pending})")
 
 # FOR VR SUPPORT
 # ext_manager.set_extension_enabled_immediate("omni.kit.xr.core", True)
@@ -62,28 +94,39 @@ for _ext in (
 
 
 """Rest everything follows."""
+_ckpt("import gymnasium")
 import gymnasium as gym
+_ckpt("import torch")
 import torch
+_ckpt("import carb")
 import carb
 
 
+_ckpt("import isaaclab_tasks.utils.parse_cfg")
 from isaaclab_tasks.utils.parse_cfg import get_checkpoint_path
+_ckpt("import isaaclab_rl.rsl_rl")
 from isaaclab_rl.rsl_rl import RslRlVecEnvWrapper
+_ckpt("import isaaclab.sim")
 import isaaclab.sim as sim_utils
+_ckpt("import omni.appwindow")
 import omni.appwindow
 
 
-
+_ckpt("import rclpy")
 import rclpy
+_ckpt("import ros2 module")
 from ros2 import RobotBaseNode, add_camera, add_rtx_lidar, pub_robo_data_ros2
 from geometry_msgs.msg import Twist
 
 
+_ckpt("import agent_cfg")
 from agent_cfg import unitree_go2_agent_cfg, unitree_g1_agent_cfg
+_ckpt("import custom_rl_env (this pulls isaaclab_assets Unitree USD cfg)")
 from custom_rl_env import UnitreeGo2CustomEnvCfg, G1RoughEnvCfg
 import custom_rl_env
-
+_ckpt("import omnigraph")
 from omnigraph import create_front_cam_omnigraph
+_ckpt("all imports complete")
 
 
 def _load_mlp_policy(ckpt_path: str, hidden_dims, activation_name: str, device: str):
@@ -216,9 +259,12 @@ def run_sim():
         agent_cfg = unitree_g1_agent_cfg
 
     # create isaac environment
+    _ckpt(f"gym.make task={args_cli.task} num_envs={env_cfg.scene.num_envs}")
     env = gym.make(args_cli.task, cfg=env_cfg)
+    _ckpt("gym.make: done")
     # wrap around environment for rsl-rl
     env = RslRlVecEnvWrapper(env)
+    _ckpt("RslRlVecEnvWrapper: wrapped")
     # specify directory for logging experiments
     log_root_path = os.path.join("logs", "rsl_rl", agent_cfg["experiment_name"])
     log_root_path = os.path.abspath(log_root_path)
@@ -241,20 +287,29 @@ def run_sim():
         return actor(obs_tensor)
 
     # reset environment
+    _ckpt("env.get_observations()")
     obs = env.get_observations()
+    _ckpt("env.get_observations: done")
 
     # initialize ROS2 node
+    _ckpt("rclpy.init + RobotBaseNode")
     rclpy.init()
     base_node = RobotBaseNode(env_cfg.scene.num_envs)
     add_cmd_sub(env_cfg.scene.num_envs)
+    _ckpt("ROS2 publishers up")
 
     # Lidar disabled pending Unitree_L1.json update for Isaac Sim 5.0 schema.
     annotator_lst = []
-    add_camera(env_cfg.scene.num_envs, args_cli.robot)
+    try:
+        add_camera(env_cfg.scene.num_envs, args_cli.robot)
+        _ckpt("camera added")
+    except Exception as e:
+        _ckpt(f"add_camera skipped ({type(e).__name__}: {e}) — isaaclab.sensors.Camera API changed in 0.54.x")
 
-    # ROS 2 camera stream omnigraph — created after the stage/robot prim is in place
-    for i in range(env_cfg.scene.num_envs):
-        create_front_cam_omnigraph(i)
+    # ROS 2 camera OmniGraph stream requires isaacsim.ros2.bridge, which we
+    # deliberately do not enable (see extension-enable note above). Skip.
+    _ckpt("camera omnigraph skipped (bridge extension disabled for rclpy compat)")
+    _ckpt("entering main loop")
 
     setup_custom_env()
     

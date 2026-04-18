@@ -23,8 +23,9 @@ if [[ ! -d "$BUNDLED_LIB" ]]; then
     exit 1
 fi
 
-export LD_LIBRARY_PATH="$BUNDLED_LIB${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+# See run_sim.sh for the bundled-Jazzy LD_LIBRARY_PATH / PYTHONPATH rationale.
 export PYTHONPATH="$BUNDLED_RCLPY${PYTHONPATH:+:$PYTHONPATH}"
+export LD_LIBRARY_PATH="$BUNDLED_LIB${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
 cd "$SCRIPT_DIR"
 exec python -u main.py --robot_amount 1 --robot g1 "$@"
