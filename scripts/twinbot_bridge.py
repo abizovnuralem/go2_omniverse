@@ -70,9 +70,12 @@ def cyclone_reader(queue: mp.Queue):
             pos = [float(msg.motor_state[i].q)       for i in range(12)]
             vel = [float(msg.motor_state[i].dq)      for i in range(12)]
             eff = [float(msg.motor_state[i].tau_est) for i in range(12)]
-            # non-blocking put; drop if publisher is behind
+            # IMU quaternion from SDK is (w, x, y, z). Also grab angular velocity.
+            q = msg.imu_state.quaternion    # [w, x, y, z]
+            quat = [float(q[0]), float(q[1]), float(q[2]), float(q[3])]
+            gyro = [float(v) for v in msg.imu_state.gyroscope]
             try:
-                queue.put_nowait((pos, vel, eff))
+                queue.put_nowait((pos, vel, eff, quat, gyro))
             except Exception:
                 pass
             self._count += 1
@@ -128,15 +131,34 @@ def fastdds_publisher(queue: mp.Queue):
                     break
             if latest is None:
                 return
-            pos, vel, eff = latest
+            pos, vel, eff, quat, gyro = latest
+            stamp = self.get_clock().now().to_msg()
+
             js = JointState()
-            js.header.stamp = self.get_clock().now().to_msg()
+            js.header.stamp = stamp
             js.header.frame_id = "base_link"
             js.name = MOTOR_JOINT_NAMES
             js.position = pos
             js.velocity = vel
             js.effort = eff
             self._pub_js.publish(js)
+
+            # Base orientation + angular velocity (no absolute position from IMU).
+            # Sim consumer pins base position; orientation comes from here.
+            od = Odometry()
+            od.header.stamp = stamp
+            od.header.frame_id = "odom"
+            od.child_frame_id = "base_link"
+            # ROS Odometry quaternion layout is (x, y, z, w); SDK is (w, x, y, z).
+            od.pose.pose.orientation.w = quat[0]
+            od.pose.pose.orientation.x = quat[1]
+            od.pose.pose.orientation.y = quat[2]
+            od.pose.pose.orientation.z = quat[3]
+            od.twist.twist.angular.x = gyro[0]
+            od.twist.twist.angular.y = gyro[1]
+            od.twist.twist.angular.z = gyro[2]
+            self._pub_odom.publish(od)
+
             self._seq += 1
 
     rclpy.init()

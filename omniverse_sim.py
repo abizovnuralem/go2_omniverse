@@ -328,11 +328,11 @@ def run_sim():
     # simulate environment
     while simulation_app.is_running():
         with torch.inference_mode():
-            if twin is not None:
-                twin_actions = twin.actions(device)
-                actions = twin_actions if twin_actions is not None else policy(obs)
-            else:
-                actions = policy(obs)
+            actions = policy(obs)
             obs, _, _, _ = env.step(actions)
+            if twin is not None:
+                # Overwrite physics-stepped state with the real dog's state.
+                # Kinematic playback — bypasses PD/gravity for an exact mirror.
+                twin.apply(device)
             pub_robo_data_ros2(args_cli.robot, env_cfg.scene.num_envs, base_node, env, annotator_lst, start_time)
     env.close()

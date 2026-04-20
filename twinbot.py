@@ -1,13 +1,12 @@
 """Twinbot subscriber — runs inside the Isaac Sim process.
 
-Subscribes to /real_dog/joint_states (published by twinbot_bridge.py on Jetson)
-and exposes the latest real-robot joint positions in the sim's joint-name order.
+Consumes `/real_dog/joint_states` (joint positions in SDK motor order) and
+`/real_dog/odom` (base orientation from the IMU) published by
+`twinbot_bridge.py` on the Jetson, and overwrites the sim articulation's
+joint state and root pose each frame.
 
-Usage:
-    from twinbot import TwinbotSubscriber
-    twin = TwinbotSubscriber(env)          # call after rclpy.init()
-    ...
-    real_actions = twin.actions(device)    # in the main loop, replaces policy(obs)
+This is kinematic playback — physics is bypassed so the sim dog mirrors
+the real dog exactly regardless of contact forces or policy feedback.
 """
 from __future__ import annotations
 
@@ -16,30 +15,31 @@ from typing import Optional
 
 import torch
 from sensor_msgs.msg import JointState
+from nav_msgs.msg import Odometry
 import rclpy
 
 
 class TwinbotSubscriber:
-    """Thread-safe mirror of the real Go2's joint state."""
+    """Thread-safe mirror of the real Go2's joint + base state."""
 
-    def __init__(self, env):
+    def __init__(self, env, pin_xy: bool = True):
         self._env = env
         self._lock = threading.Lock()
-        self._latest_pos: Optional[torch.Tensor] = None  # [1, num_joints] in sim DOF order
+        self._latest_pos: Optional[torch.Tensor] = None   # [1, num_joints] sim DOF order
+        self._latest_vel: Optional[torch.Tensor] = None
+        self._latest_quat: Optional[torch.Tensor] = None  # [1, 4] (w, x, y, z)
+        self._latest_ang_vel: Optional[torch.Tensor] = None  # [1, 3]
 
-        # Build real-dog name → sim DOF index map once
         robot = env.unwrapped.scene["robot"]
-        sim_names = robot.data.joint_names          # list[str], sim DOF order
-        self._sim_names = sim_names
+        self._sim_names = robot.data.joint_names
         self._device = str(env.unwrapped.device)
 
-        # Not used for direct writes, kept for reference only.
-        self._action_scale = 0.5
+        # Fixed sim-world XY for the base (we don't integrate IMU to position).
+        # The sim dog rotates with the real dog but stays visible at spawn XY.
+        self._pin_xy = pin_xy
+        default_root = robot.data.default_root_state[0].clone()  # (13,) pos+quat+linvel+angvel
+        self._spawn_pos = default_root[0:3].clone().to(self._device)
 
-        # Use an isolated rclpy Context + SingleThreadedExecutor so this node's
-        # spin thread never touches the shared wait-set used by add_cmd_sub().
-        # (Two concurrent rclpy.spin() calls on the default context raise
-        # "ValueError: generator already executing".)
         from rclpy.context import Context
         from rclpy.executors import SingleThreadedExecutor
         from rclpy.node import Node as RclNode
@@ -47,63 +47,65 @@ class TwinbotSubscriber:
         self._ctx = Context()
         rclpy.init(context=self._ctx)
         self._node = RclNode("twinbot_subscriber", context=self._ctx)
-        self._node.create_subscription(
-            JointState, "/real_dog/joint_states", self._cb, 10
-        )
+        self._node.create_subscription(JointState, "/real_dog/joint_states", self._cb_joints, 10)
+        self._node.create_subscription(Odometry, "/real_dog/odom", self._cb_odom, 10)
         self._executor = SingleThreadedExecutor(context=self._ctx)
         self._executor.add_node(self._node)
         self._thread = threading.Thread(target=self._executor.spin, daemon=True)
         self._thread.start()
         self._node.get_logger().info(
-            f"TwinbotSubscriber ready — action_scale={self._action_scale}, "
-            f"listening on /real_dog/joint_states"
+            "TwinbotSubscriber ready — listening /real_dog/joint_states + /real_dog/odom"
         )
 
-    def _cb(self, msg: JointState):
+    def _cb_joints(self, msg: JointState):
         name_to_pos = dict(zip(msg.name, msg.position))
-        # reorder to sim DOF order; joints not in msg fall back to default
+        name_to_vel = dict(zip(msg.name, msg.velocity)) if msg.velocity else {}
         robot = self._env.unwrapped.scene["robot"]
-        default_pos = robot.data.default_joint_pos[0]   # [num_joints]
-        ordered = [
-            name_to_pos.get(n, float(default_pos[i]))
-            for i, n in enumerate(self._sim_names)
-        ]
-        pos = torch.tensor(ordered, dtype=torch.float32, device=self._device).unsqueeze(0)
+        default_pos = robot.data.default_joint_pos[0]
+        ordered_pos = [name_to_pos.get(n, float(default_pos[i])) for i, n in enumerate(self._sim_names)]
+        ordered_vel = [name_to_vel.get(n, 0.0) for n in self._sim_names]
+        pos = torch.tensor(ordered_pos, dtype=torch.float32, device=self._device).unsqueeze(0)
+        vel = torch.tensor(ordered_vel, dtype=torch.float32, device=self._device).unsqueeze(0)
         with self._lock:
             self._latest_pos = pos
+            self._latest_vel = vel
 
-    def latest_pos(self, device: str) -> Optional[torch.Tensor]:
-        """Return latest real-robot joint positions in sim DOF order, or None."""
+    def _cb_odom(self, msg: Odometry):
+        q = msg.pose.pose.orientation
+        quat = torch.tensor([[q.w, q.x, q.y, q.z]], dtype=torch.float32, device=self._device)
+        w = msg.twist.twist.angular
+        ang = torch.tensor([[w.x, w.y, w.z]], dtype=torch.float32, device=self._device)
         with self._lock:
-            pos = self._latest_pos
-        return pos.to(device) if pos is not None else None
+            self._latest_quat = quat
+            self._latest_ang_vel = ang
 
     def apply(self, device: str) -> bool:
-        """Write real-robot joint positions directly to the articulation.
+        """Kinematic playback: overwrite joint state + root pose this frame.
 
-        Bypasses the RL action space (avoids PD scale / offset issues).
-        Returns True if a new position was applied, False if no data yet.
+        Returns True if any real-robot data has been applied.
         """
         with self._lock:
-            real_pos = self._latest_pos
-        if real_pos is None:
+            pos = self._latest_pos
+            vel = self._latest_vel
+            quat = self._latest_quat
+            ang = self._latest_ang_vel
+
+        if pos is None and quat is None:
             return False
 
         robot = self._env.unwrapped.scene["robot"]
-        robot.set_joint_position_target(real_pos.to(device))
+
+        if pos is not None:
+            vel_in = vel if vel is not None else torch.zeros_like(pos)
+            robot.write_joint_state_to_sim(pos.to(device), vel_in.to(device))
+
+        if quat is not None and self._pin_xy:
+            # Root pose = [px, py, pz, qw, qx, qy, qz]
+            root_pose = torch.cat([self._spawn_pos.to(device).unsqueeze(0), quat.to(device)], dim=1)
+            robot.write_root_pose_to_sim(root_pose)
+            # Root velocity: zero linear, real angular
+            ang_in = ang if ang is not None else torch.zeros(1, 3, device=device)
+            root_vel = torch.cat([torch.zeros(1, 3, device=device), ang_in.to(device)], dim=1)
+            robot.write_root_velocity_to_sim(root_vel)
+
         return True
-
-    def actions(self, device: str) -> Optional[torch.Tensor]:
-        """Legacy: return env-space action that approximates real-robot pose.
-
-        Kept as fallback; prefer apply() for accuracy.
-        action = (real_pos - default_pos) / action_scale
-        """
-        with self._lock:
-            real_pos = self._latest_pos
-        if real_pos is None:
-            return None
-
-        robot = self._env.unwrapped.scene["robot"]
-        default_pos = robot.data.default_joint_pos
-        return (real_pos.to(device) - default_pos.to(device)) / self._action_scale
