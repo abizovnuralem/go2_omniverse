@@ -44,13 +44,30 @@ from isaaclab.managers import ObservationTermCfg as ObsTerm
 from isaaclab.managers import RewardTermCfg as RewTerm
 from isaaclab.managers import SceneEntityCfg
 from isaaclab.managers import TerminationTermCfg as DoneTerm
-from isaaclab.utils.noise import AdditiveUniformNoiseCfg as Unoise
+from isaaclab.utils.noise import UniformNoiseCfg as Unoise
 import isaaclab_tasks.manager_based.locomotion.velocity.mdp as mdp
 
 from terrain_cfg import ROUGH_TERRAINS_CFG
 from robots.g1.config import G1_CFG
 
 from omniverse_sim import args_cli
+
+
+# ponytail: resolve Isaac's bundled studio HDRI once at module load (a plain string, so
+# it survives @configclass deepcopy — module objects in a class body cannot be pickled).
+# Glob because the extscache path is version-pinned and shifts on Isaac upgrades; empty
+# string falls back to a flat neutral dome if the asset ever moves.
+def _find_studio_hdri():
+    import glob, os
+    import isaacsim
+    hits = glob.glob(
+        os.path.dirname(isaacsim.__file__) + "/**/domeLight/photo_studio_01_4k.hdr",
+        recursive=True,
+    )
+    return hits[0] if hits else ""
+
+
+_STUDIO_HDRI = _find_studio_hdri()
 
 
 base_command = {}
@@ -111,9 +128,14 @@ class MySceneCfg(InteractiveSceneCfg):
         spawn=sim_utils.DistantLightCfg(color=(0.75, 0.75, 0.75), intensity=3000.0),
     )
 
+    # ponytail: light the dome with Isaac's bundled studio HDRI (see _STUDIO_HDRI above)
+    # so the Go2's shells catch real reflections instead of reading as flat gray.
     sky_light = AssetBaseCfg(
         prim_path="/World/skyLight",
-        spawn=sim_utils.DomeLightCfg(color=(0.13, 0.13, 0.13), intensity=1000.0),
+        spawn=sim_utils.DomeLightCfg(
+            color=(1.0, 1.0, 1.0), intensity=900.0,
+            texture_file=_STUDIO_HDRI or None,
+        ),
     )
 
 

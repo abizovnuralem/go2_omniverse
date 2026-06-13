@@ -23,6 +23,20 @@ from scipy.spatial.transform import Rotation
 import isaaclab.sim as sim_utils
 
 
+def _to_numpy(arr):
+    """warp.array / torch.Tensor / numpy / list -> numpy.ndarray.
+
+    IsaacLab 4.5 / Isaac Sim 6.0 expose articulation buffers as warp arrays,
+    which do not support Python item indexing or iteration; numpy does.
+    """
+    if hasattr(arr, "numpy"):
+        try:
+            return arr.numpy()
+        except Exception:
+            return arr.detach().cpu().numpy()
+    return np.asarray(arr)
+
+
 def update_meshes_for_cloud2(position_array, origin, rot):
     q = rot.cpu().numpy()
     rotation = Rotation.from_quat([q[1], q[2], q[3], q[0]])
@@ -104,17 +118,26 @@ def add_camera(num_envs, robot_type):
 
 
 def pub_robo_data_ros2(robot_type, num_envs, base_node, env, annotator_lst, start_time):
+    # IsaacLab 4.5 / Isaac Sim 6.0 expose articulation buffers as warp arrays,
+    # which do not support Python item indexing. Convert each buffer to numpy
+    # once at the source so the publish helpers can index and iterate it.
+    robot_data = env.unwrapped.scene["robot"].data
+    joint_pos = _to_numpy(robot_data.joint_pos)
+    root_state = _to_numpy(robot_data.root_state_w)
+    lin_vel_b = _to_numpy(robot_data.root_lin_vel_b)
+    ang_vel_b = _to_numpy(robot_data.root_ang_vel_b)
     for i in range(num_envs):
-        base_node.publish_joints(env.unwrapped.scene["robot"].data.joint_names, env.unwrapped.scene["robot"].data.joint_pos[i], i)
-        base_node.publish_odom(env.unwrapped.scene["robot"].data.root_state_w[i, :3], env.unwrapped.scene["robot"].data.root_state_w[i, 3:7], i)
-        base_node.publish_imu(env.unwrapped.scene["robot"].data.root_state_w[i, 3:7], env.unwrapped.scene["robot"].data.root_lin_vel_b[i, :], env.unwrapped.scene["robot"].data.root_ang_vel_b[i, :], i)
+        base_node.publish_joints(robot_data.joint_names, joint_pos[i], i)
+        base_node.publish_odom(root_state[i, :3], root_state[i, 3:7], i)
+        base_node.publish_imu(root_state[i, 3:7], lin_vel_b[i, :], ang_vel_b[i, :], i)
 
         if robot_type == "go2":
+            net_forces = _to_numpy(env.unwrapped.scene["contact_forces"].data.net_forces_w)
             base_node.publish_robot_state([
-                env.unwrapped.scene["contact_forces"].data.net_forces_w[i][4][2],
-                env.unwrapped.scene["contact_forces"].data.net_forces_w[i][8][2],
-                env.unwrapped.scene["contact_forces"].data.net_forces_w[i][14][2],
-                env.unwrapped.scene["contact_forces"].data.net_forces_w[i][18][2]
+                net_forces[i][4][2],
+                net_forces[i][8][2],
+                net_forces[i][14][2],
+                net_forces[i][18][2],
             ], i)
 
         try:
@@ -122,8 +145,7 @@ def pub_robo_data_ros2(robot_type, num_envs, base_node, env, annotator_lst, star
                 for j in range(num_envs):
                     data = annotator_lst[j].get_data()
                     point_cloud = update_meshes_for_cloud2(
-                        data['data'], env.unwrapped.scene["robot"].data.root_state_w[j, :3],
-                        env.unwrapped.scene["robot"].data.root_state_w[j, 3:7]
+                        data['data'], root_state[j, :3], root_state[j, 3:7]
                     )
                     base_node.publish_lidar(point_cloud, j)
                 start_time = time.time()

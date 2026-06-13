@@ -13,6 +13,42 @@ We are thrilled to announce that the Unitree Go2/G1 robot has now been integrate
 Get ready to take your research to the next level with this powerful new resource at your fingertips!
 
 
+## What this fork adds
+
+This fork of [`abizovnuralem/go2_omniverse`](https://github.com/abizovnuralem/go2_omniverse)
+adds a **real-robot digital twin** mode and an **Isaac Sim 5.x / ROS 2 Jazzy** port,
+plus higher-fidelity default rendering.
+
+### Real-robot digital twin (`./run_twinbot.sh`)
+
+`twinbot` mode drives the *simulated* Go2's joints directly from the **physical**
+robot's `/lowstate` stream (forwarded off the Jetson by `scripts/twinbot_bridge.py`),
+so the sim mirrors the real dog 1:1 via IMU-aligned kinematic playback. Details in
+[`docs/TWINBOT_IMU_FIX.md`](./docs/TWINBOT_IMU_FIX.md).
+
+Scope, stated honestly:
+
+- **Real → Sim** (physical robot state into the twin): implemented and IMU-aligned.
+- **Sim → Real** (commands back to the robot): the standard Unitree SDK control path,
+  not a closed, learned loop. We do not claim more than that.
+
+### Rendering
+
+- The default scene is lit with Isaac's bundled studio HDRI (image-based lighting), so
+  the robot's shells catch real reflections instead of reading as a flat gray dome.
+- `./run_twinbot.sh` launches the `quality` RT2 render preset (`--rendering_mode quality`).
+- For cinematic demo footage, record the joint trajectory live, then re-render it offline
+  in RTX **path-tracing** mode (live closed-loop favours the real-time preset).
+
+### Isaac Sim 5.x boot fixes
+
+- ROS 2 bridge libraries are resolved from `isaacsim.ros2.core` (Isaac 5.x relocated them
+  out of `isaacsim.ros2.bridge`), with a fallback to the old path.
+- Articulation buffers are converted from warp arrays to NumPy before indexing
+  (IsaacLab 4.5 / Isaac Sim 6.0 compatibility).
+- See [`JAZZY.md`](./JAZZY.md) for the venv setup and what is / is not validated.
+
+
 ## Real time Go2 Balancing:
 
 <p align="center">
@@ -117,7 +153,8 @@ This is the path the repo was originally designed for. Instructions below are un
 **Track B — experimental, Jazzy-based (Ubuntu 24.04, Isaac Sim 5.0, IsaacLab 0.54.3)**
 
 A pip-into-venv setup that uses the ROS 2 Jazzy runtime **bundled inside**
-Isaac Sim's `isaacsim.ros2.bridge` extension, rather than a system
+Isaac Sim (resolved from the `isaacsim.ros2.core` extension on Isaac 5.x, or
+the older `isaacsim.ros2.bridge` as a fallback), rather than a system
 `/opt/ros/jazzy` install. See [`JAZZY.md`](./JAZZY.md) for the full
 rationale (including why system Jazzy's Python 3.12 is not compatible with
 Isaac Sim 5.0's Python 3.11), setup, and what is / is not validated.

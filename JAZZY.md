@@ -58,8 +58,8 @@ Consumers that expected `go2_interfaces/Go2State` need one of:
 
 ```bash
 # 1. Create the Isaac Sim venv (Python 3.11)
-python3.11 -m venv ~/isaac-sim-venv
-source ~/isaac-sim-venv/bin/activate
+python3.11 -m venv ~/Sim/isaac-sim-venv
+source ~/Sim/isaac-sim-venv/bin/activate
 pip install --upgrade pip
 
 # 2. Install Isaac Sim 5.0 + IsaacLab 0.54.3 into the venv
@@ -84,7 +84,7 @@ bundled Jazzy runtime — you do **not** need to `source /opt/ros/jazzy`.
 
 Override knobs:
 
-- `ISAAC_VENV` — path to the venv (default `~/isaac-sim-venv`)
+- `ISAAC_VENV` — path to the venv (default `~/Sim/isaac-sim-venv`)
 - `ISAACLAB_PATH` — path to a source IsaacLab checkout if you use one
 - `RMW_IMPLEMENTATION` — defaults to `rmw_fastrtps_cpp`
 

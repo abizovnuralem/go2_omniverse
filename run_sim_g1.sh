@@ -3,8 +3,8 @@ set -euo pipefail
 
 # Isaac Sim 5.0 / IsaacLab 0.54.3 launcher for Unitree G1 humanoid.
 
-export ISAAC_VENV="${ISAAC_VENV:-$HOME/isaac-sim-venv}"
-export ISAACLAB_PATH="${ISAACLAB_PATH:-$HOME/IsaacLab}"
+export ISAAC_VENV="${ISAAC_VENV:-$HOME/Sim/isaac-sim-venv}"
+export ISAACLAB_PATH="${ISAACLAB_PATH:-$HOME/Sim/IsaacLab}"
 export OMNI_KIT_ACCEPT_EULA=YES
 
 export ROS_DISTRO=jazzy
@@ -14,7 +14,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 source "$ISAAC_VENV/bin/activate"
 
-ISAAC_ROS2_EXT="$(python -c "import isaacsim, os; print(os.path.join(os.path.dirname(isaacsim.__file__), 'exts', 'isaacsim.ros2.bridge'))")"
+# ponytail: Isaac 5.x moved the bundled ROS 2 libs from isaacsim.ros2.bridge -> isaacsim.ros2.core.
+# Pick whichever ext actually has $ROS_DISTRO/lib so this works across Isaac versions.
+ISAAC_ROS2_EXT="$(python -c "import isaacsim, os; b=os.path.dirname(isaacsim.__file__); d=os.environ['ROS_DISTRO']; print(next(os.path.join(b,'exts',e) for e in ('isaacsim.ros2.core','isaacsim.ros2.bridge') if os.path.isdir(os.path.join(b,'exts',e,d,'lib'))))")"
 BUNDLED_LIB="$ISAAC_ROS2_EXT/$ROS_DISTRO/lib"
 BUNDLED_RCLPY="$ISAAC_ROS2_EXT/$ROS_DISTRO/rclpy"
 
