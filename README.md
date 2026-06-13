@@ -1,3 +1,8 @@
+<p align="center">
+<img src="./media/hero.png" width="900" alt="Unitree Go2 digital twin rendered in Isaac Sim with studio HDRI lighting">
+</p>
+<p align="center"><em>Unitree Go2 twin in Isaac Sim 5.x — studio HDRI lighting, RT2 <code>quality</code> render.</em></p>
+
 ![Digital Twins](https://github.com/abizovnuralem/go2_ros2_sdk/assets/33475993/ddbe30ab-21d1-46fd-b44b-198efba92771)
 
 
@@ -37,8 +42,22 @@ Scope, stated honestly:
 - The default scene is lit with Isaac's bundled studio HDRI (image-based lighting), so
   the robot's shells catch real reflections instead of reading as a flat gray dome.
 - `./run_twinbot.sh` launches the `quality` RT2 render preset (`--rendering_mode quality`).
+- Hero stills are produced headlessly with `--capture`, which renders the Go2 from several
+  angles via an `isaaclab` Camera render product (no on-screen window needed):
+
+  ```bash
+  ./run_sim.sh --capture 80 --headless --enable_cameras --rendering_mode quality \
+      --capture_dir ./media
+  ```
+
 - For cinematic demo footage, record the joint trajectory live, then re-render it offline
   in RTX **path-tracing** mode (live closed-loop favours the real-time preset).
+
+<p align="center">
+<img src="./media/twin_side.png" width="46%" alt="Go2 twin, side profile">
+&nbsp;
+<img src="./media/twin_low.png" width="46%" alt="Go2 twin, low angle">
+</p>
 
 ### Isaac Sim 5.x boot fixes
 

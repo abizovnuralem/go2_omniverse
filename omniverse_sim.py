@@ -25,6 +25,11 @@ parser.add_argument("--robot_amount", type=int, default=1, help="Setup the robot
 parser.add_argument("--twinbot", action="store_true", default=False,
                     help="Digital-twin mode: drive sim joints from real Go2 via /real_dog/joint_states "
                          "(requires twinbot_bridge.py running on the Jetson)")
+parser.add_argument("--capture", type=int, default=0,
+                    help="Capture N settle frames then write hero PNGs from several angles and exit "
+                         "(headless-safe; uses an isaaclab Camera render product, not a window grab).")
+parser.add_argument("--capture_dir", type=str, default="/tmp/twin_hero",
+                    help="Directory to write hero PNGs into when --capture > 0.")
 
 
 # append RSL-RL cli arguments
@@ -216,6 +221,92 @@ def setup_custom_env():
         print("Error loading custom environment. You should download custom envs folder from: https://drive.google.com/drive/folders/1vVGuO1KIX1K6mD6mBHDZGm9nk2vaRyj3?usp=sharing")
 
 
+def capture_hero_shots(env, policy, obs, device, n_settle, out_dir):
+    """Write hero PNGs of the Go2 from several angles via an isaaclab Camera render
+    product. Headless-safe: it reads the RGB tensor directly, so it does NOT depend on
+    an on-screen Kit window (this Isaac build renders offscreen). The policy keeps the
+    robot balancing while we shoot."""
+    import os
+    import numpy as np
+    from PIL import Image
+    from isaaclab.sensors import Camera, CameraCfg
+
+    os.makedirs(out_dir, exist_ok=True)
+    # World-anchored hero cam: 1080p, 35mm (less wide/distorted than the 24mm FPV cam).
+    cam = Camera(CameraCfg(
+        prim_path="/World/hero_cam",
+        height=1080, width=1920, update_period=0.0, data_types=["rgb"],
+        spawn=sim_utils.PinholeCameraCfg(
+            focal_length=35.0, focus_distance=400.0, horizontal_aperture=20.955,
+            clipping_range=(0.05, 1.0e6)),
+    ))
+
+    dt = float(getattr(env.unwrapped, "step_dt", 1.0 / 60.0))
+
+    def step():
+        nonlocal obs
+        with torch.inference_mode():
+            obs, _, _, _ = env.step(policy(obs))
+
+    # The Camera was created AFTER sim play, so its PHYSICS_READY init callback never
+    # fired. Step once so the render product exists, then force-initialize it.
+    step()
+    if not cam.is_initialized:
+        cam._initialize_impl()
+        cam._is_initialized = True
+
+    # Kill the RL velocity-command debug markers (the floating blue/green arrows) so
+    # they don't photobomb the hero shots.
+    try:
+        env.unwrapped.command_manager.set_debug_vis(False)
+    except Exception as e:
+        _ckpt(f"could not disable command debug_vis ({type(e).__name__}: {e})")
+
+    # Let the policy stand the robot up and settle.
+    for _ in range(max(n_settle, 1)):
+        step()
+    cam.update(dt)
+
+    # robot base position so shots frame wherever it ended up
+    base = _to_numpy_safe(env.unwrapped.scene["robot"].data.root_state_w)[0, :3]
+    bx, by, bz = float(base[0]), float(base[1]), float(base[2])
+    # aim at the robot's body centre (base sits ~0.4 m up; legs reach the floor)
+    tgt = [bx, by, bz - 0.08]
+    shots = {
+        "hero_front34": [bx + 2.0, by + 1.6, bz + 0.45],   # 3/4 front
+        "hero_side":    [bx + 0.10, by + 2.4, bz + 0.10],  # side profile
+        "hero_low":     [bx + 1.7, by + 1.0, bz - 0.18],   # low dramatic
+    }
+    eyes = torch.tensor([shots[k] for k in shots], dtype=torch.float32, device=device)
+    targets = torch.tensor([tgt for _ in shots], dtype=torch.float32, device=device)
+
+    saved = []
+    for i, name in enumerate(shots):
+        cam.set_world_poses_from_view(eyes[i:i + 1], targets[i:i + 1])
+        # Re-render a few frames so RT2 accumulation/exposure settles for this view.
+        for _ in range(24):
+            step()
+            cam.update(dt)
+        rgb = cam.data.output["rgb"][0].detach().cpu().numpy()
+        if rgb.dtype != np.uint8:
+            rgb = np.clip(rgb * (255.0 if rgb.max() <= 1.0 else 1.0), 0, 255).astype(np.uint8)
+        path = os.path.join(out_dir, f"{name}.png")
+        Image.fromarray(rgb[..., :3]).save(path)
+        saved.append(path)
+        _ckpt(f"captured {path}")
+    return saved
+
+
+def _to_numpy_safe(arr):
+    if hasattr(arr, "numpy"):
+        try:
+            return arr.numpy()
+        except Exception:
+            return arr.detach().cpu().numpy()
+    import numpy as np
+    return np.asarray(arr)
+
+
 def cmd_vel_cb(msg, num_robot):
     x = msg.linear.x
     y = msg.linear.y
@@ -323,6 +414,12 @@ def run_sim():
     _ckpt("entering main loop")
 
     setup_custom_env()
+
+    if args_cli.capture > 0:
+        capture_hero_shots(env, policy, obs, device, args_cli.capture, args_cli.capture_dir)
+        env.close()
+        simulation_app.close()
+        return
 
     start_time = time.time()
     # simulate environment
