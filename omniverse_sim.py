@@ -232,6 +232,31 @@ def capture_hero_shots(env, policy, obs, device, n_settle, out_dir):
     from isaaclab.sensors import Camera, CameraCfg
 
     os.makedirs(out_dir, exist_ok=True)
+
+    # Drop the robot into a REAL environment (NVIDIA's stock warehouse) streamed from the
+    # Isaac asset server, instead of the empty HDRI void. This is the single biggest
+    # realism lever: real geometry, real bounce light, real reflections around the dog.
+    try:
+        from isaacsim.storage.native import get_assets_root_path
+        root = get_assets_root_path() or \
+            "https://omniverse-content-staging.s3-us-west-2.amazonaws.com/Assets/Isaac/6.0"
+        wh = f"{root}/Isaac/Environments/Simple_Warehouse/warehouse.usd"
+        sim_utils.UsdFileCfg(usd_path=wh).func("/World/hero_env", sim_utils.UsdFileCfg(usd_path=wh))
+        _ckpt(f"loaded hero environment: {wh}")
+        # The warehouse brings its own ceiling lighting; dim our flat fill dome + sun so the
+        # scene reads naturally (path the studio HDRI down, not off, for soft reflections).
+        import omni.usd
+        stage = omni.usd.get_context().get_stage()
+        for path, val in (("/World/skyLight", 80.0), ("/World/light", 250.0)):
+            p = stage.GetPrimAtPath(path)
+            if p and p.IsValid():
+                a = p.GetAttribute("inputs:intensity")
+                if a:
+                    a.Set(val)
+        in_env = True
+    except Exception as e:
+        _ckpt(f"hero environment load failed ({type(e).__name__}: {e}) — shooting on HDRI void")
+        in_env = False
     # World-anchored hero cam: 1080p, 35mm (less wide/distorted than the 24mm FPV cam).
     cam = Camera(CameraCfg(
         prim_path="/World/hero_cam",
