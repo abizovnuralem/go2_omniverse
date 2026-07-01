@@ -1,16 +1,71 @@
+<p align="center">
+<img src="./media/hero.png" width="900" alt="Unitree Go2 digital twin rendered in Isaac Sim with studio HDRI lighting">
+</p>
+<p align="center"><em>Unitree Go2 twin in Isaac Sim 5.x — studio HDRI lighting, RT2 <code>quality</code> render.</em></p>
+
 ![Digital Twins](https://github.com/abizovnuralem/go2_ros2_sdk/assets/33475993/ddbe30ab-21d1-46fd-b44b-198efba92771)
 
 
 # Welcome to the Unitree Go2/G1 Digital Twins Project!
 
-[![IsaacSim](https://img.shields.io/badge/IsaacSim-orbit-gold.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
-[![Python](https://img.shields.io/badge/python-3.10-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
+[![IsaacSim](https://img.shields.io/badge/IsaacSim-orbit%20%7C%205.0-gold.svg)](https://docs.omniverse.nvidia.com/isaacsim/latest/overview.html)
+[![Python](https://img.shields.io/badge/python-3.10%20%7C%203.11-blue.svg)](https://docs.python.org/3/whatsnew/3.10.html)
 [![Linux platform](https://img.shields.io/badge/platform-linux--64-orange.svg)](https://releases.ubuntu.com/22.04/)
 [![License](https://img.shields.io/badge/license-BSD--2-yellow.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 We are thrilled to announce that the Unitree Go2/G1 robot has now been integrated with the Nvidia Isaac Sim (Orbit), marking a major step forward in robotics research and development. The combination of these two cutting-edge technologies opens up a world of possibilities for creating and testing algorithms in a variety of simulated environments.
 
 Get ready to take your research to the next level with this powerful new resource at your fingertips!
+
+
+## What this fork adds
+
+This fork of [`abizovnuralem/go2_omniverse`](https://github.com/abizovnuralem/go2_omniverse)
+adds a **real-robot digital twin** mode and an **Isaac Sim 5.x / ROS 2 Jazzy** port,
+plus higher-fidelity default rendering.
+
+### Real-robot digital twin (`./run_twinbot.sh`)
+
+`twinbot` mode drives the *simulated* Go2's joints directly from the **physical**
+robot's `/lowstate` stream (forwarded off the Jetson by `scripts/twinbot_bridge.py`),
+so the sim mirrors the real dog 1:1 via IMU-aligned kinematic playback. Details in
+[`docs/TWINBOT_IMU_FIX.md`](./docs/TWINBOT_IMU_FIX.md).
+
+Scope, stated honestly:
+
+- **Real → Sim** (physical robot state into the twin): implemented and IMU-aligned.
+- **Sim → Real** (commands back to the robot): the standard Unitree SDK control path,
+  not a closed, learned loop. We do not claim more than that.
+
+### Rendering
+
+- The default scene is lit with Isaac's bundled studio HDRI (image-based lighting), so
+  the robot's shells catch real reflections instead of reading as a flat gray dome.
+- `./run_twinbot.sh` launches the `quality` RT2 render preset (`--rendering_mode quality`).
+- Hero stills are produced headlessly with `--capture`, which renders the Go2 from several
+  angles via an `isaaclab` Camera render product (no on-screen window needed):
+
+  ```bash
+  ./run_sim.sh --capture 80 --headless --enable_cameras --rendering_mode quality \
+      --capture_dir ./media
+  ```
+
+- For cinematic demo footage, record the joint trajectory live, then re-render it offline
+  in RTX **path-tracing** mode (live closed-loop favours the real-time preset).
+
+<p align="center">
+<img src="./media/twin_side.png" width="46%" alt="Go2 twin, side profile">
+&nbsp;
+<img src="./media/twin_low.png" width="46%" alt="Go2 twin, low angle">
+</p>
+
+### Isaac Sim 5.x boot fixes
+
+- ROS 2 bridge libraries are resolved from `isaacsim.ros2.core` (Isaac 5.x relocated them
+  out of `isaacsim.ros2.bridge`), with a fallback to the old path.
+- Articulation buffers are converted from warp arrays to NumPy before indexing
+  (IsaacLab 4.5 / Isaac Sim 6.0 compatibility).
+- See [`JAZZY.md`](./JAZZY.md) for the venv setup and what is / is not validated.
 
 
 ## Real time Go2 Balancing:
@@ -107,7 +162,25 @@ If your system is not sufficient for Isaac Sim or Isaac Lab etc., this is where 
 If you would like to get more detailed information about Robolaunch web platform payments or anything else, contact us!
 
 ## System requirements and installation
-Whether you're running locally or in the cloud, you'll need to install:
+
+There are now two supported tracks:
+
+**Track A — original, Humble-based (Ubuntu 22.04, Isaac Sim 2023.1.1, Orbit 0.3.0)**
+
+This is the path the repo was originally designed for. Instructions below are unchanged.
+
+**Track B — experimental, Jazzy-based (Ubuntu 24.04, Isaac Sim 5.0, IsaacLab 0.54.3)**
+
+A pip-into-venv setup that uses the ROS 2 Jazzy runtime **bundled inside**
+Isaac Sim (resolved from the `isaacsim.ros2.core` extension on Isaac 5.x, or
+the older `isaacsim.ros2.bridge` as a fallback), rather than a system
+`/opt/ros/jazzy` install. See [`JAZZY.md`](./JAZZY.md) for the full
+rationale (including why system Jazzy's Python 3.12 is not compatible with
+Isaac Sim 5.0's Python 3.11), setup, and what is / is not validated.
+`./run_sim.sh` and `./run_sim_g1.sh` are the launchers for this track; they
+no longer require `conda activate orbit`.
+
+### Track A requirements
 1. Ubuntu 22.04
 2. Nvidia Isaac Sim 2023.1.1
 3. Nvidia Orbit 0.3.0

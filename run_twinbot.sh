@@ -1,12 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Isaac Sim 5.0 / IsaacLab 0.54.3 launcher for Unitree Go2 digital twin.
+# Digital-twin launcher for Unitree Go2.
 #
-# We intentionally do NOT source /opt/ros/jazzy because system Jazzy is built
-# for Python 3.12 and Isaac Sim 5.0 requires Python 3.11. The Isaac Sim
-# ROS 2 bridge extension ships an internal Jazzy (rclpy + msg libs) matching
-# Python 3.11 — this script points the loader at those libraries.
+# Runs Isaac Sim in twinbot mode: sim robot joints are driven by the real
+# Go2's /lowstate stream, forwarded via twinbot_bridge.py on the Jetson.
+#
+# Setup (one-time on Jetson):
+#   source /opt/ros/humble/setup.bash
+#   source ~/unitree_ros2/cyclonedds_ws/install/setup.bash
+#   export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
+#   python3 scripts/twinbot_bridge.py
+#
+# Then on this machine:
+#   bash run_twinbot.sh [--headless]
 
 export ISAAC_VENV="${ISAAC_VENV:-$HOME/Sim/isaac-sim-venv}"
 export ISAACLAB_PATH="${ISAACLAB_PATH:-$HOME/Sim/IsaacLab}"
@@ -17,7 +24,6 @@ export RMW_IMPLEMENTATION="${RMW_IMPLEMENTATION:-rmw_fastrtps_cpp}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Activate Isaac Sim venv (Python 3.11, isaacsim 5.0, isaaclab 0.54.3)
 source "$ISAAC_VENV/bin/activate"
 
 # ponytail: Isaac 5.x moved the bundled ROS 2 libs from isaacsim.ros2.bridge -> isaacsim.ros2.core.
@@ -27,19 +33,16 @@ BUNDLED_LIB="$ISAAC_ROS2_EXT/$ROS_DISTRO/lib"
 BUNDLED_RCLPY="$ISAAC_ROS2_EXT/$ROS_DISTRO/rclpy"
 
 if [[ ! -d "$BUNDLED_LIB" ]]; then
-    echo "[run_sim] bundled ROS 2 $ROS_DISTRO libs not found at $BUNDLED_LIB" >&2
+    echo "[run_twinbot] bundled ROS 2 $ROS_DISTRO libs not found at $BUNDLED_LIB" >&2
     exit 1
 fi
 
-# The bridge extension does NOT auto-add its rclpy to Python's sys.path, so
-# PYTHONPATH is required for rclpy imports. LD_LIBRARY_PATH is required so
-# rclpy's native typesupport libs can be dlopen'd at publisher-creation time.
-# When the bridge extension is also enabled, two copies of rcl_interfaces get
-# loaded and trigger a ParameterEvent assert — so omniverse_sim.py now enables
-# only the OmniGraph core extensions, not isaacsim.ros2.bridge, and publishes
-# via rclpy from Python directly.
 export PYTHONPATH="$BUNDLED_RCLPY${PYTHONPATH:+:$PYTHONPATH}"
 export LD_LIBRARY_PATH="$BUNDLED_LIB${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 
+echo "[run_twinbot] starting digital-twin sim (robot=go2, terrain=flat, --twinbot)"
 cd "$SCRIPT_DIR"
-exec python -u main.py --robot_amount 1 --robot go2 --terrain flat "$@"
+# ponytail: --rendering_mode quality bumps the default 'balanced' RT2 preset up to the
+# 'quality' preset (better GI/shadows/reflections). One robot + flat terrain is light
+# enough to run it live on the 5070; pass --rendering_mode balanced after to override.
+exec python -u main.py --robot_amount 1 --robot go2 --terrain flat --twinbot --rendering_mode quality "$@"
